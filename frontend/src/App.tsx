@@ -7,15 +7,39 @@ import { Register } from './components/auth/Register';
 import { Dashboard } from './components/Dashboard';
 import { AccountDetails } from './components/auth/AccountDetails';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { AdminRoute } from './components/auth/AdminRoute';
+import PhysiotherapistList from './components/physiotherapist/PhysiotherapistList';
+import PhysiotherapistForm from './components/physiotherapist/PhysiotherapistForm';
+import StudentList from './components/student/StudentList';
+import StudentForm from './components/student/StudentForm';
+import ModalityList from './components/modality/ModalityList';
+import ModalityForm from './components/modality/ModalityForm';
 import './App.css';
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2',
+      main: '#2E8B57', // Verde esmeralda
+      light: '#3CB371',
+      dark: '#006400',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#4682B4', // Azul aço
+      light: '#87CEEB',
+      dark: '#004B8D',
+    },
+    background: {
+      default: '#f5f5f5',
+      paper: '#ffffff',
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    h1: {
+      fontWeight: 500,
+    },
+    h2: {
+      fontWeight: 500,
     },
   },
 });
@@ -42,6 +66,78 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <AccountDetails />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/physiotherapists"
+                element={
+                  <AdminRoute>
+                    <PhysiotherapistList />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/physiotherapists/new"
+                element={
+                  <AdminRoute>
+                    <PhysiotherapistForm />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/physiotherapists/edit/:id"
+                element={
+                  <AdminRoute>
+                    <PhysiotherapistForm />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/students"
+                element={
+                  <ProtectedRoute>
+                    <StudentList />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/students/new"
+                element={
+                  <ProtectedRoute>
+                    <StudentForm />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/students/edit/:id"
+                element={
+                  <ProtectedRoute>
+                    <StudentForm />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/modalities"
+                element={
+                  <ProtectedRoute>
+                    <ModalityList />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/modalities/new"
+                element={
+                  <ProtectedRoute>
+                    <ModalityForm />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/modalities/edit/:id"
+                element={
+                  <ProtectedRoute>
+                    <ModalityForm />
                   </ProtectedRoute>
                 }
               />

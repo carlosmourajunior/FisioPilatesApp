@@ -1,6 +1,17 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=fisiopilates
+      - POSTGRES_USER=fisiouser
+      - POSTGRES_PASSWORD=fisiopass
+    networks:
+      - app-network
+
   backend:
     build: ./backend
     ports:
@@ -12,9 +23,23 @@ services:
       - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,backend,*
       - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
       - CSRF_TRUSTED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+      - DB_NAME=fisiopilates
+      - DB_USER=fisiouser
+      - DB_PASSWORD=fisiopass
+      - DB_HOST=db
+      - DB_PORT=5432
     command: >
-      bash -c "python manage.py migrate &&
-               python manage.py runserver 0.0.0.0:8000"
+      bash -c "
+        echo 'Waiting for PostgreSQL to be ready...' &&
+        while ! python -c 'import psycopg2; psycopg2.connect(host=\"db\", database=\"fisiopilates\", user=\"fisiouser\", password=\"fisiopass\")' 2>/dev/null; do
+          echo 'PostgreSQL is unavailable - sleeping' &&
+          sleep 1;
+        done &&
+        echo 'PostgreSQL is up - executing migrations' &&
+        python manage.py migrate &&
+        python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      - db
     networks:
       - app-network
 
@@ -37,3 +62,6 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  postgres_data:

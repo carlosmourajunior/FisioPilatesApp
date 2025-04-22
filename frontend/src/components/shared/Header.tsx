@@ -59,9 +59,8 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           <MenuIcon />
         </IconButton>
         <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-          <img src={logo} alt="Logo" style={{ height: '32px', marginRight: '10px' }} />
-          <Typography variant="h6" noWrap component="div">
-            GenericApp
+          <img src={logo} alt="Logo" style={{ height: '32px', marginRight: '10px' }} />          <Typography variant="h6" noWrap component="div">
+            FisioPilates App
           </Typography>
         </Box>
         <div>

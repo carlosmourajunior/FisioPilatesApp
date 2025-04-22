@@ -12,8 +12,12 @@ import {
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
+  PersonAddAlt1 as PersonAddIcon,
+  School as SchoolIcon,
+  FitnessCenter as FitnessCenterIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface SidebarProps {
   open: boolean;
@@ -22,6 +26,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ open, drawerWidth }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <Drawer
@@ -46,6 +51,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, drawerWidth }) => {
                 <DashboardIcon />
               </ListItemIcon>
               <ListItemText primary="Dashboard" />
+            </ListItemButton>
+          </ListItem>
+          {user?.is_staff && (
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => navigate('/physiotherapists')}>
+                <ListItemIcon>
+                  <PersonAddIcon />
+                </ListItemIcon>
+                <ListItemText primary="Fisioterapeutas" />
+              </ListItemButton>
+            </ListItem>
+          )}
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => navigate('/students')}>
+              <ListItemIcon>
+                <SchoolIcon />
+              </ListItemIcon>
+              <ListItemText primary="Alunos" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => navigate('/modalities')}>
+              <ListItemIcon>
+                <FitnessCenterIcon />
+              </ListItemIcon>
+              <ListItemText primary="Modalidades" />
             </ListItemButton>
           </ListItem>
         </List>
