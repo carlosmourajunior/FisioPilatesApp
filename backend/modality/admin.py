@@ -3,5 +3,5 @@ from .models import Modality
 
 @admin.register(Modality)
 class ModalityAdmin(admin.ModelAdmin):
-    list_display = ('name', 'frequency', 'price')
-    search_fields = ('name', 'frequency')
+    list_display = ('name', 'price')
+    search_fields = ('name',)

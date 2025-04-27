@@ -24,6 +24,13 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AxiosError } from 'axios';
 
+interface Modality {
+  id: number;
+  name: string;
+  price: number;
+  payment_type: 'MONTHLY' | 'SESSION';
+}
+
 interface Student {
   id: number;
   name: string;
@@ -34,12 +41,7 @@ interface Student {
   active: boolean;
   notes: string | null;
   modality: number;
-  modality_details: {
-    id: number;
-    name: string;
-    frequency: string;
-    price: number;
-  };
+  modality_details: Modality;
 }
 
 const StudentList: React.FC = () => {
@@ -157,7 +159,7 @@ const StudentList: React.FC = () => {
                   <TableCell>{formatDate(student.registration_date)}</TableCell>
                   <TableCell>
                     {student.modality_details ? 
-                      `${student.modality_details.name} - ${student.modality_details.frequency}` : 
+                      `${student.modality_details.name} - ${student.modality_details.payment_type === 'MONTHLY' ? 'Mensal' : 'Por Sessão'}` : 
                       'Não definida'
                     }
                   </TableCell>

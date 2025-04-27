@@ -26,9 +26,9 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 interface Modality {
   id: number;
   name: string;
-  frequency: string;
   price: number;
-  active: boolean;
+  payment_type: 'MONTHLY' | 'SESSION';
+  description: string | null;
 }
 
 interface Physiotherapist {
@@ -212,7 +212,7 @@ const StudentForm: React.FC = () => {
                   </MenuItem>
                   {modalities.map((modality) => (
                     <MenuItem key={modality.id} value={modality.id}>
-                      {`${modality.name} - ${modality.frequency} - ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(modality.price)}`}
+                      {`${modality.name} - ${modality.payment_type === 'MONTHLY' ? 'Mensal' : 'Por Sessão'} - ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(modality.price)}`}
                     </MenuItem>
                   ))}
                 </Select>

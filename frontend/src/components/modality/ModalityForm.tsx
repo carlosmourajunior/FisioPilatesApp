@@ -7,8 +7,10 @@ import {
   Paper,
   Alert,
   Snackbar,
-  FormControlLabel,
-  Switch,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../utils/axios';
@@ -17,9 +19,8 @@ import { BaseLayout } from '../shared/BaseLayout';
 interface ModalityFormData {
   name: string;
   description: string;
-  frequency: string;
   price: string;
-  active: boolean;
+  payment_type: 'MONTHLY' | 'SESSION';
 }
 
 const ModalityForm: React.FC = () => {
@@ -30,9 +31,8 @@ const ModalityForm: React.FC = () => {
   const [formData, setFormData] = useState<ModalityFormData>({
     name: '',
     description: '',
-    frequency: '',
     price: '',
-    active: true,
+    payment_type: 'MONTHLY',
   });
   const [error, setError] = useState<string | null>(null);
 
@@ -48,9 +48,8 @@ const ModalityForm: React.FC = () => {
       setFormData({
         name: response.data.name,
         description: response.data.description || '',
-        frequency: response.data.frequency,
         price: response.data.price.toString(),
-        active: response.data.active,
+        payment_type: response.data.payment_type,
       });
     } catch (error) {
       setError('Erro ao carregar modalidade');
@@ -79,11 +78,11 @@ const ModalityForm: React.FC = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement> | any) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: value,
     }));
   };
 
@@ -106,15 +105,19 @@ const ModalityForm: React.FC = () => {
                 fullWidth
               />
 
-              <TextField
-                label="Frequência"
-                name="frequency"
-                value={formData.frequency}
-                onChange={handleChange}
-                required
-                fullWidth
-                helperText="Ex: 2x por semana, 3x por semana"
-              />
+              <FormControl fullWidth required>
+                <InputLabel id="payment-type-label">Tipo de Pagamento</InputLabel>
+                <Select
+                  labelId="payment-type-label"
+                  name="payment_type"
+                  value={formData.payment_type}
+                  label="Tipo de Pagamento"
+                  onChange={handleChange}
+                >
+                  <MenuItem value="MONTHLY">Mensal</MenuItem>
+                  <MenuItem value="SESSION">Sessão</MenuItem>
+                </Select>
+              </FormControl>
 
               <TextField
                 label="Preço"

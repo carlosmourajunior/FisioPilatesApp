@@ -26,9 +26,8 @@ interface Modality {
   id: number;
   name: string;
   description: string | null;
-  frequency: string;
   price: number;
-  active: boolean;
+  payment_type: 'MONTHLY' | 'SESSION';
   created_at: string;
   updated_at: string;
 }
@@ -126,7 +125,7 @@ const ModalityList: React.FC = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Nome</TableCell>
-                <TableCell>Frequência</TableCell>
+                <TableCell>Tipo de Pagamento</TableCell>
                 <TableCell>Preço</TableCell>
                 <TableCell>Descrição</TableCell>
                 <TableCell align="right">Ações</TableCell>
@@ -136,7 +135,7 @@ const ModalityList: React.FC = () => {
               {modalities.map((modality) => (
                 <TableRow key={modality.id}>
                   <TableCell>{modality.name}</TableCell>
-                  <TableCell>{modality.frequency}</TableCell>
+                  <TableCell>{modality.payment_type === 'MONTHLY' ? 'Mensal' : 'Sessão'}</TableCell>
                   <TableCell>{formatPrice(modality.price)}</TableCell>
                   <TableCell>{modality.description}</TableCell>
                   <TableCell align="right">
