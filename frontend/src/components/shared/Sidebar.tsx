@@ -16,6 +16,7 @@ import {
   School as SchoolIcon,
   FitnessCenter as FitnessCenterIcon,
 } from '@mui/icons-material';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -77,6 +78,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, drawerWidth }) => {
                 <FitnessCenterIcon />
               </ListItemIcon>
               <ListItemText primary="Modalidades" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => navigate('/calendar')}>
+              <ListItemIcon>
+                <CalendarMonthIcon />
+              </ListItemIcon>
+              <ListItemText primary="Calendário" />
             </ListItemButton>
           </ListItem>
         </List>
