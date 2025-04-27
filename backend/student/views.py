@@ -23,17 +23,27 @@ class StudentViewSet(viewsets.ModelViewSet):
         if active is not None:
             queryset = queryset.filter(active=active.lower() == 'true')
         return queryset
-    
+
     def perform_create(self, serializer):
-        physiotherapist = None
         if not self.request.user.is_staff:
-            # If the user is a physiotherapist, automatically assign them
+            # Se o usuário é um fisioterapeuta, atribuir automaticamente
             try:
                 physiotherapist = self.request.user.physiotherapist
+                serializer.save(physiotherapist=physiotherapist)
             except:
-                pass
-        elif 'physiotherapist' not in serializer.validated_data:
-            # If admin user and no physiotherapist specified, don't assign one
-            pass
-            
-        serializer.save(physiotherapist=physiotherapist)
+                serializer.save()
+        else:
+            # Se é admin, usa o fisioterapeuta selecionado no frontend ou None
+            serializer.save()
+
+    def perform_update(self, serializer):
+        if not self.request.user.is_staff:
+            # Se o usuário é um fisioterapeuta, manter ele como responsável
+            try:
+                physiotherapist = self.request.user.physiotherapist
+                serializer.save(physiotherapist=physiotherapist)
+            except:
+                serializer.save()
+        else:
+            # Se é admin, usa o fisioterapeuta selecionado no frontend ou mantém o atual
+            serializer.save()

@@ -22,6 +22,13 @@ import { useAuth } from '../../contexts/AuthContext';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import StudentScheduling from './StudentScheduling';
+
+interface Schedule {
+  id?: number;
+  weekday: number;
+  hour: number;
+}
 
 interface Modality {
   id: number;
@@ -46,6 +53,7 @@ interface StudentFormData {
   notes: string;
   physiotherapist?: number | null;
   modality: number;
+  schedules: Schedule[];
 }
 
 const StudentForm: React.FC = () => {
@@ -56,6 +64,7 @@ const StudentForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [physiotherapists, setPhysiotherapists] = useState<Physiotherapist[]>([]);
   const [modalities, setModalities] = useState<Modality[]>([]);
+  const [selectedModality, setSelectedModality] = useState<Modality | null>(null);
   const [formData, setFormData] = useState<StudentFormData>({
     name: '',
     email: '',
@@ -64,7 +73,8 @@ const StudentForm: React.FC = () => {
     active: true,
     notes: '',
     physiotherapist: null,
-    modality: 0
+    modality: 0,
+    schedules: []
   });
 
   const isEdit = Boolean(id);
@@ -98,10 +108,18 @@ const StudentForm: React.FC = () => {
       setLoading(true);
       const response = await api.get(`/api/students/${id}/`);
       const student = response.data;
+      
       setFormData({
         ...student,
-        date_of_birth: new Date(student.date_of_birth)
+        date_of_birth: new Date(student.date_of_birth),
+        schedules: student.schedules || []
       });
+
+      // Set selected modality
+      const modality = student.modality_details;
+      if (modality) {
+        setSelectedModality(modality);
+      }
     } catch (error) {
       console.error('Error fetching student:', error);
       setError('Erro ao carregar dados do aluno');
@@ -125,11 +143,38 @@ const StudentForm: React.FC = () => {
         date_of_birth: formData.date_of_birth?.toISOString().split('T')[0]
       };
 
+      let studentId: number;
       if (isEdit) {
         await api.put(`/api/students/${id}/`, submitData);
+        studentId = Number(id);
       } else {
-        await api.post('/api/students/', submitData);
+        const response = await api.post('/api/students/', submitData);
+        studentId = response.data.id;
       }
+
+      // Handle schedules if modality is monthly
+      if (selectedModality?.payment_type === 'MONTHLY') {
+        // Delete existing schedules if editing
+        if (isEdit) {
+          const currentSchedules = await api.get(`/api/schedules/?student=${studentId}`);
+          await Promise.all(
+            currentSchedules.data.map((schedule: any) =>
+              api.delete(`/api/schedules/${schedule.id}/`)
+            )
+          );
+        }
+
+        // Create new schedules
+        await Promise.all(
+          formData.schedules.map(schedule =>
+            api.post('/api/schedules/', {
+              ...schedule,
+              student: studentId
+            })
+          )
+        );
+      }
+
       navigate('/students');
     } catch (error: any) {
       console.error('Error saving student:', error);
@@ -144,6 +189,26 @@ const StudentForm: React.FC = () => {
     setFormData((prev) => ({
       ...prev,
       [name]: name === 'active' ? checked : value
+    }));
+  };
+
+  const handleModalityChange = (event: any) => {
+    const modalityId = Number(event.target.value);
+    setFormData(prev => ({
+      ...prev,
+      modality: modalityId,
+      // Clear schedules if changing from monthly to session
+      schedules: []
+    }));
+    
+    const selected = modalities.find(m => m.id === modalityId);
+    setSelectedModality(selected || null);
+  };
+
+  const handleSchedulesChange = (newSchedules: Schedule[]) => {
+    setFormData(prev => ({
+      ...prev,
+      schedules: newSchedules
     }));
   };
 
@@ -165,7 +230,8 @@ const StudentForm: React.FC = () => {
                 onChange={handleChange}
                 required
                 disabled={loading}
-              />              <TextField
+              />
+              <TextField
                 fullWidth
                 label="Email"
                 name="email"
@@ -204,7 +270,7 @@ const StudentForm: React.FC = () => {
                   label="Modalidade"
                   name="modality"
                   value={formData.modality || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, modality: Number(e.target.value) }))}
+                  onChange={handleModalityChange}
                   disabled={loading}
                 >
                   <MenuItem value="">
@@ -217,6 +283,13 @@ const StudentForm: React.FC = () => {
                   ))}
                 </Select>
               </FormControl>
+
+              {selectedModality?.payment_type === 'MONTHLY' && (
+                <StudentScheduling
+                  schedules={formData.schedules}
+                  onChange={handleSchedulesChange}
+                />
+              )}
 
               {user?.is_staff && (
                 <FormControl fullWidth>
@@ -239,7 +312,8 @@ const StudentForm: React.FC = () => {
                     ))}
                   </Select>
                 </FormControl>
-              )}              <TextField
+              )}
+              <TextField
                 fullWidth
                 label="Observações"
                 name="notes"
