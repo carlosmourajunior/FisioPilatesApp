@@ -13,7 +13,7 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = ['id', 'name', 'email', 'phone', 'date_of_birth', 'registration_date', 
                  'active', 'notes', 'physiotherapist', 'physiotherapist_details',
-                 'modality', 'modality_details', 'schedules']
+                 'modality', 'modality_details', 'schedules', 'payment_date', 'session_quantity']
         read_only_fields = ['registration_date']
         
     def get_schedules(self, obj):

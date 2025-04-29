@@ -42,6 +42,9 @@ interface Student {
   notes: string | null;
   modality: number;
   modality_details: Modality;
+  payment_date: string | null;
+  session_quantity: number | null;
+  commission: number;
 }
 
 const StudentList: React.FC = () => {

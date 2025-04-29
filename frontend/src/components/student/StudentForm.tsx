@@ -54,6 +54,9 @@ interface StudentFormData {
   physiotherapist?: number | null;
   modality: number;
   schedules: Schedule[];
+  payment_date: Date | null;
+  session_quantity: number | null;
+  commission: number;
 }
 
 const StudentForm: React.FC = () => {
@@ -64,8 +67,7 @@ const StudentForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [physiotherapists, setPhysiotherapists] = useState<Physiotherapist[]>([]);
   const [modalities, setModalities] = useState<Modality[]>([]);
-  const [selectedModality, setSelectedModality] = useState<Modality | null>(null);
-  const [formData, setFormData] = useState<StudentFormData>({
+  const [selectedModality, setSelectedModality] = useState<Modality | null>(null);  const [formData, setFormData] = useState<StudentFormData>({
     name: '',
     email: '',
     phone: '',
@@ -74,7 +76,10 @@ const StudentForm: React.FC = () => {
     notes: '',
     physiotherapist: null,
     modality: 0,
-    schedules: []
+    schedules: [],
+    payment_date: null,
+    session_quantity: null,
+    commission: 50
   });
 
   const isEdit = Boolean(id);
@@ -191,17 +196,19 @@ const StudentForm: React.FC = () => {
       [name]: name === 'active' ? checked : value
     }));
   };
-
   const handleModalityChange = (event: any) => {
     const modalityId = Number(event.target.value);
+    const selected = modalities.find(m => m.id === modalityId);
+    
     setFormData(prev => ({
       ...prev,
       modality: modalityId,
-      // Clear schedules if changing from monthly to session
-      schedules: []
+      // Clear type-specific fields
+      schedules: selected?.payment_type === 'MONTHLY' ? prev.schedules : [],
+      payment_date: selected?.payment_type === 'MONTHLY' ? prev.payment_date : null,
+      session_quantity: selected?.payment_type === 'SESSION' ? prev.session_quantity : null
     }));
     
-    const selected = modalities.find(m => m.id === modalityId);
     setSelectedModality(selected || null);
   };
 
@@ -311,8 +318,23 @@ const StudentForm: React.FC = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                </FormControl>
-              )}
+                </FormControl>              )}
+
+              <TextField
+                fullWidth
+                label="Comissão (%)"
+                name="commission"
+                type="number"
+                value={formData.commission}
+                onChange={handleChange}
+                inputProps={{
+                  min: 0,
+                  max: 100,
+                  step: 1
+                }}
+                helperText="Porcentagem de comissão (entre 0 e 100%)"
+              />
+
               <TextField
                 fullWidth
                 label="Observações"
