@@ -14,15 +14,19 @@ import {
   Alert,
   Snackbar,
   Switch,
-  FormControlLabel
+  FormControlLabel,
+  Chip,
 } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, AttachMoney as AttachMoneyIcon } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/axios';
 import { BaseLayout } from '../shared/BaseLayout';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AxiosError } from 'axios';
+import PaymentForm from '../payment/PaymentForm';
+import { PaymentService } from '../../services/PaymentService';
+import { PaymentStatus } from '../../types/payment';
 
 interface Modality {
   id: number;
@@ -53,21 +57,35 @@ const StudentList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showOnlyActive, setShowOnlyActive] = useState(true);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [paymentStatuses, setPaymentStatuses] = useState<Record<number, PaymentStatus>>({});
+
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      console.log('Fetching students with active filter:', showOnlyActive);
       const response = await api.get(`/api/students/?active=${showOnlyActive}`);
-      console.log('Students response:', response.data);
-      setStudents(response.data);    } catch (error) {
+      setStudents(response.data);
+      
+      // Fetch payment status for each student
+      const statuses: Record<number, PaymentStatus> = {};
+      await Promise.all(
+        response.data.map(async (student: Student) => {
+          if (student.modality) {
+            try {
+              const status = await PaymentService.getPaymentStatus(student.id);
+              statuses[student.id] = status;
+            } catch (error) {
+              console.error('Error fetching payment status for student:', student.id, error);
+            }
+          }
+        })
+      );
+      setPaymentStatuses(statuses);
+    } catch (error) {
       setError('Erro ao carregar alunos');
       const axiosError = error as AxiosError;
       console.error('Error fetching students:', axiosError);
-      console.error('Error details:', {
-        message: axiosError.message,
-        response: axiosError.response?.data,
-        status: axiosError.response?.status
-      });
     } finally {
       setLoading(false);
     }
@@ -81,7 +99,8 @@ const StudentList: React.FC = () => {
     try {
       await api.delete(`/api/students/${id}/`);
       setSuccessMessage('Aluno excluído com sucesso');
-      fetchStudents();    } catch (error) {
+      fetchStudents();
+    } catch (error) {
       const axiosError = error as AxiosError;
       setError('Erro ao excluir aluno');
       console.error('Error deleting student:', axiosError);
@@ -92,11 +111,22 @@ const StudentList: React.FC = () => {
     try {
       await api.patch(`/api/students/${id}/`, { active: !currentStatus });
       setSuccessMessage('Status do aluno atualizado com sucesso');
-      fetchStudents();    } catch (error) {
+      fetchStudents();
+    } catch (error) {
       const axiosError = error as AxiosError;
       setError('Erro ao atualizar status do aluno');
       console.error('Error updating student status:', axiosError);
     }
+  };
+
+  const handlePaymentClick = (student: Student) => {
+    setSelectedStudent(student);
+    setPaymentDialogOpen(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    setSuccessMessage('Pagamento registrado com sucesso');
+    fetchStudents();
   };
 
   useEffect(() => {
@@ -105,6 +135,43 @@ const StudentList: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'dd/MM/yyyy', { locale: ptBR });
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', { 
+      style: 'currency', 
+      currency: 'BRL' 
+    }).format(value);
+  };
+
+  const renderPaymentStatus = (student: Student) => {
+    const status = paymentStatuses[student.id];
+    if (!status || !student.modality_details) return null;
+
+    if (status.payment_type === 'MONTHLY') {
+      return (
+        <Chip
+          label={status.paid_current_month ? 'Mês atual pago' : 'Pagamento pendente'}
+          color={status.paid_current_month ? 'success' : 'warning'}
+          size="small"
+        />
+      );
+    } else {
+      if (!status.session_quantity) return null;
+      const percentPaid = ((status.total_paid || 0) / (status.total_value || 1)) * 100;
+      return (
+        <Box>
+          <Typography variant="body2">
+            {formatCurrency(status.total_paid || 0)} / {formatCurrency(status.total_value || 0)}
+          </Typography>
+          <Chip
+            label={`${Math.round(percentPaid)}% pago`}
+            color={percentPaid >= 100 ? 'success' : 'warning'}
+            size="small"
+          />
+        </Box>
+      );
+    }
   };
 
   return (
@@ -146,8 +213,8 @@ const StudentList: React.FC = () => {
                 <TableCell>Email</TableCell>
                 <TableCell>Telefone</TableCell>
                 <TableCell>Data de Nascimento</TableCell>
-                <TableCell>Data de Registro</TableCell>
                 <TableCell>Modalidade</TableCell>
+                <TableCell>Status do Pagamento</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell align="right">Ações</TableCell>
               </TableRow>
@@ -159,12 +226,14 @@ const StudentList: React.FC = () => {
                   <TableCell>{student.email}</TableCell>
                   <TableCell>{student.phone}</TableCell>
                   <TableCell>{formatDate(student.date_of_birth)}</TableCell>
-                  <TableCell>{formatDate(student.registration_date)}</TableCell>
                   <TableCell>
                     {student.modality_details ? 
                       `${student.modality_details.name} - ${student.modality_details.payment_type === 'MONTHLY' ? 'Mensal' : 'Por Sessão'}` : 
                       'Não definida'
                     }
+                  </TableCell>
+                  <TableCell>
+                    {student.modality_details && renderPaymentStatus(student)}
                   </TableCell>
                   <TableCell>
                     <FormControlLabel
@@ -173,12 +242,20 @@ const StudentList: React.FC = () => {
                           checked={student.active}
                           onChange={() => handleToggleActive(student.id, student.active)}
                           color="primary"
+                          size="small"
                         />
                       }
                       label={student.active ? 'Ativo' : 'Inativo'}
                     />
                   </TableCell>
                   <TableCell align="right">
+                    {student.modality_details && (                      <IconButton
+                        color="primary"
+                        onClick={() => handlePaymentClick(student)}
+                      >
+                        <AttachMoneyIcon />
+                      </IconButton>
+                    )}
                     <IconButton
                       color="primary"
                       component={Link}
@@ -195,16 +272,19 @@ const StudentList: React.FC = () => {
                   </TableCell>
                 </TableRow>
               ))}
-              {students.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    Nenhum aluno encontrado
-                  </TableCell>
-                </TableRow>
-              )}
             </TableBody>
           </Table>
         </TableContainer>
+
+        {selectedStudent && (
+          <PaymentForm
+            open={paymentDialogOpen}
+            onClose={() => setPaymentDialogOpen(false)}
+            studentId={selectedStudent.id}
+            modalityId={selectedStudent.modality}
+            onSuccess={handlePaymentSuccess}
+          />
+        )}
 
         <Snackbar
           open={!!error}

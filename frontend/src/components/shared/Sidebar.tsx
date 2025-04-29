@@ -12,9 +12,9 @@ import {
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
-  PersonAddAlt1 as PersonAddIcon,
-  School as SchoolIcon,
+  PersonAddAlt1 as PersonAddIcon,  School as SchoolIcon,
   FitnessCenter as FitnessCenterIcon,
+  Payments as PaymentsIcon,
 } from '@mui/icons-material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { useNavigate } from 'react-router-dom';
@@ -80,12 +80,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, drawerWidth }) => {
               <ListItemText primary="Modalidades" />
             </ListItemButton>
           </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton onClick={() => navigate('/calendar')}>
+          <ListItem disablePadding>            <ListItemButton onClick={() => navigate('/calendar')}>
               <ListItemIcon>
                 <CalendarMonthIcon />
               </ListItemIcon>
               <ListItemText primary="Calendário" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => navigate('/payments')}>
+              <ListItemIcon>
+                <PaymentsIcon />
+              </ListItemIcon>
+              <ListItemText primary="Pagamentos" />
             </ListItemButton>
           </ListItem>
         </List>
