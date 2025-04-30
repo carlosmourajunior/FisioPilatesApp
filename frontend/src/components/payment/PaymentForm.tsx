@@ -41,13 +41,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   studentId,
   modalityId,
   onSuccess
-}) => {
-  const [formData, setFormData] = useState<PaymentFormData>({
+}) => {  const [formData, setFormData] = useState<PaymentFormData>({
     student: studentId,
     modality: modalityId,
     amount: 0,
     payment_date: new Date(),
-    reference_month: null,
+    reference_month: new Date(),
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,13 +95,20 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       console.error('Error fetching payment status:', error);
     }
   };
-
   useEffect(() => {
     if (open) {
       fetchPaymentStatus();
       fetchPayments();
+      // Reset the form data when opening the dialog
+      setFormData({
+        student: studentId,
+        modality: modalityId,
+        amount: 0,
+        payment_date: new Date(),
+        reference_month: new Date(),
+      });
     }
-  }, [studentId, open]);
+  }, [studentId, modalityId, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
