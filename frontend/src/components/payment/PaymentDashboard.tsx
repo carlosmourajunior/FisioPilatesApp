@@ -21,6 +21,7 @@ import {
   Divider,
   SelectChangeEvent,
 } from '@mui/material';
+import { PhysiotherapistService } from '../../services/PhysiotherapistService';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -56,6 +57,10 @@ export interface Physiotherapist {
   id: number;
   first_name: string;
   last_name: string;
+  email: string;
+  crefito: string;
+  phone: string;
+  specialization: string;
 }
 
 const PaymentDashboard: FC = () => {
@@ -68,8 +73,7 @@ const PaymentDashboard: FC = () => {
 
   const fetchPhysiotherapists = async () => {
     try {
-      const response = await fetch('/api/physiotherapists/');
-      const data = await response.json();
+      const data = await PhysiotherapistService.listPhysiotherapists();
       setPhysiotherapists(data);
     } catch (error) {
       console.error('Error fetching physiotherapists:', error);
@@ -162,8 +166,7 @@ const PaymentDashboard: FC = () => {
                     label="Fisioterapeuta"
                     onChange={handlePhysiotherapistChange}
                   >
-                    <MenuItem value="">Todos</MenuItem>
-                    {physiotherapists.map((physio) => (
+                    <MenuItem value="">Todos</MenuItem>                    {physiotherapists.map((physio) => (
                       <MenuItem key={physio.id} value={physio.id}>
                         {`${physio.first_name} ${physio.last_name}`}
                       </MenuItem>

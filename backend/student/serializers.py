@@ -10,10 +10,11 @@ class StudentSerializer(serializers.ModelSerializer):
     schedules = serializers.SerializerMethodField()
     
     class Meta:
-        model = Student
+        model = Student        
         fields = ['id', 'name', 'email', 'phone', 'date_of_birth', 'registration_date', 
                  'active', 'notes', 'physiotherapist', 'physiotherapist_details',
-                 'modality', 'modality_details', 'schedules', 'payment_date', 'session_quantity']
+                 'modality', 'modality_details', 'schedules', 'payment_date', 'session_quantity',
+                 'payment_type']
         read_only_fields = ['registration_date']
         
     def get_schedules(self, obj):

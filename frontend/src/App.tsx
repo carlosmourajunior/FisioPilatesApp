@@ -16,14 +16,20 @@ import ModalityList from './components/modality/ModalityList';
 import ModalityForm from './components/modality/ModalityForm';
 import StudentCalendar from './components/student/StudentCalendar';
 import PaymentDashboard from './components/payment/PaymentDashboard';
+import StudentDetails from './components/student/StudentDetails';
 import './App.css';
 
 const theme = createTheme({
-  palette: {
-    primary: {
+  palette: {    primary: {
       main: '#2E8B57', // Verde esmeralda
       light: '#3CB371',
       dark: '#006400',
+    },
+    purple: {
+      main: '#8B008B', // DarkMagenta
+      light: '#BA55D3', // MediumOrchid
+      dark: '#4B0082', // Indigo
+      contrastText: '#ffffff'
     },
     secondary: {
       main: '#4682B4', // Azul aço
@@ -110,12 +116,19 @@ function App() {
                     <StudentForm />
                   </ProtectedRoute>
                 }
-              />
-              <Route
+              />              <Route
                 path="/students/edit/:id"
                 element={
                   <ProtectedRoute>
                     <StudentForm />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/students/details/:id"
+                element={
+                  <ProtectedRoute>
+                    <StudentDetails />
                   </ProtectedRoute>
                 }
               />

@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Card, CardContent, CardActions, Button, Grid, Box, CircularProgress } from '@mui/material';
+import { Typography, Card, CardContent, Grid, Box, CircularProgress } from '@mui/material';
 import type { Theme } from '@mui/material';
 import type { SxProps } from '@mui/system';
 import { 
-  PersonAdd as PersonAddIcon, 
-  School as SchoolIcon,
   AccountBalanceWallet as WalletIcon,
-  TrendingUp as TrendingUpIcon
+  TrendingUp as TrendingUpIcon,
+  MonetizationOn as MonetizationOnIcon
 } from '@mui/icons-material';
 import { getDashboardSummary } from '../services/dashboardService';
 import type { DashboardSummary, MonthSummary } from '../services/dashboardService';
 import { BaseLayout } from './shared/BaseLayout';
-import { useNavigate } from 'react-router-dom';
+
 import { useAuth } from '../contexts/AuthContext';
 
 interface GridComponentProps {
@@ -30,7 +29,6 @@ const GridComponent: React.FC<GridComponentProps> = (props) => (
 );
 
 export const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<DashboardSummary | null>(null);
@@ -77,73 +75,52 @@ export const Dashboard: React.FC = () => {
         Bem-vindo ao Sistema de Fisioterapia e Pilates
       </Typography>
       
-      {/* Management Cards */}
-      <GridComponent container spacing={3} sx={{ mt: 2, mb: 4 }}>
-        {user?.is_staff && (
-          <GridComponent item xs={12} sm={6} md={4}>
-            <Card>
-              <CardContent>
-                <Typography variant="h5" component="div" gutterBottom>
-                  Gerenciar Fisioterapeutas
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Adicione, edite ou remova fisioterapeutas do sistema.
-                </Typography>
-              </CardContent>
-              <CardActions>
-                <Button
-                  size="small"
-                  startIcon={<PersonAddIcon />}
-                  onClick={() => navigate('/physiotherapists')}
-                >
-                  Acessar
-                </Button>
-              </CardActions>
-            </Card>
-          </GridComponent>
-        )}
+      {/* Summary Statistics */}      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
+        Resumo Geral
+      </Typography>
+      <GridComponent container spacing={3} sx={{ mb: 4 }}>
         <GridComponent item xs={12} sm={6} md={4}>
           <Card>
             <CardContent>
-              <Typography variant="h5" component="div" gutterBottom>
-                Gerenciar Alunos
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Adicione, edite ou gerencie alunos do sistema.
-              </Typography>
+              <Box textAlign="center">
+                <WalletIcon sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
+                <Typography variant="h6">Recebido no Mês</Typography>
+                <Typography variant="h4" color="success.main">
+                  {formatCurrency(dashboardData?.current_month_summary?.total_received || 0)}
+                </Typography>
+              </Box>
             </CardContent>
-            <CardActions>
-              <Button
-                size="small"
-                startIcon={<SchoolIcon />}
-                onClick={() => navigate('/students')}
-              >
-                Acessar
-              </Button>
-            </CardActions>
+          </Card>
+        </GridComponent>
+
+        <GridComponent item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Box textAlign="center">
+                <TrendingUpIcon sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
+                <Typography variant="h6">A Receber no Mês</Typography>
+                <Typography variant="h4" color="info.main">
+                  {formatCurrency(dashboardData?.current_month_summary?.total_pending || 0)}
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        </GridComponent>
+
+        <GridComponent item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent>
+              <Box textAlign="center">
+                <WalletIcon sx={{ fontSize: 40, color: 'error.main', mb: 1 }} />
+                <Typography variant="h6">Total Atrasado</Typography>
+                <Typography variant="h4" color="error.main">
+                  {formatCurrency(dashboardData?.current_month_summary?.total_overdue || 0)}
+                </Typography>
+              </Box>
+            </CardContent>
           </Card>
         </GridComponent>
       </GridComponent>
-
-      {/* Summary Statistics */}
-      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
-        Resumo Geral
-      </Typography>
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <GridComponent container spacing={3}>
-            <GridComponent item xs={12} sm={6} md={3}>
-              <Box textAlign="center">
-                <SchoolIcon sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-                <Typography variant="h6">Total de Alunos</Typography>
-                <Typography variant="h4" color="primary">
-                  {dashboardData?.total_students || 0}
-                </Typography>
-              </Box>
-            </GridComponent>
-          </GridComponent>
-        </CardContent>
-      </Card>
 
       {/* Monthly Statistics */}
       {user?.is_staff && dashboardData?.physiotherapist_summary && (
@@ -155,8 +132,7 @@ export const Dashboard: React.FC = () => {
             {dashboardData.physiotherapist_summary.map((physio) => (
               <GridComponent item xs={12} sm={6} md={4} key={physio.id}>
                 <Card>
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
+                  <CardContent>                    <Typography variant="h6" gutterBottom>
                       {physio.name}
                     </Typography>
                     <Box sx={{ mb: 2 }}>
@@ -165,6 +141,22 @@ export const Dashboard: React.FC = () => {
                       </Typography>
                       <Typography variant="h6">
                         {physio.total_students}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Faturamento do Mês
+                      </Typography>
+                      <Typography variant="h6" color="success.main">
+                        {formatCurrency(physio.total_month_revenue)}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Comissão a Pagar
+                      </Typography>
+                      <Typography variant="h6" color="purple.main">
+                        {formatCurrency(physio.commission_to_pay)}
                       </Typography>
                     </Box>
                     <Box sx={{ mb: 2 }}>
@@ -195,44 +187,61 @@ export const Dashboard: React.FC = () => {
         Resumo dos Últimos Meses
       </Typography>
       <GridComponent container spacing={3}>
-        {dashboardData?.monthly_summary.map((month: MonthSummary, index: number) => (
+        {dashboardData?.monthly_summary
+          .filter(month => month.total_expected > 0 || month.is_future)
+          .map((month: MonthSummary) => (
           <GridComponent item xs={12} sm={6} md={3} key={`${month.year}-${month.month}`}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  {getMonthName(month.month)} {month.year}
+            <Card sx={month.is_current ? { 
+              backgroundColor: 'primary.light',
+              '& .MuiTypography-root': { 
+                color: 'primary.contrastText' 
+              }
+            } : month.is_future ? {
+              backgroundColor: 'info.light',
+              '& .MuiTypography-root': { 
+                color: 'info.contrastText' 
+              }
+            } : {}}>
+              <CardContent>                <Typography variant="h6" gutterBottom>
+                  {month.is_current ? '📅 ' : month.is_future ? '🔮 ' : ''}{getMonthName(month.month)} {month.year}
                 </Typography>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Alunos Pagantes
+                  <Typography variant="body2" color={month.is_current ? 'primary.contrastText' : month.is_future ? 'info.contrastText' : 'text.secondary'}>
+                    {month.is_future ? 'Previsão de Alunos' : 'Alunos Pagantes'}
                   </Typography>
-                  <Typography variant="h6" color="success.main">
-                    {month.paid_students} / {month.total_students}
+                  <Typography variant="h6" color={month.is_current ? 'primary.contrastText' : month.is_future ? 'info.contrastText' : 'success.main'}>
+                    {month.is_future ? month.total_students : `${month.paid_students} / ${month.total_students}`}
                   </Typography>
-                </Box>
+                </Box>                {!month.is_future && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color={month.is_current ? 'primary.contrastText' : 'text.secondary'}>
+                      Alunos Pendentes
+                    </Typography>
+                    <Typography variant="h6" color={month.is_current ? 'error.light' : 'error.main'}>
+                      {month.pending_students}
+                    </Typography>
+                  </Box>
+                )}
+                
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Alunos Pendentes
+                  <Typography variant="body2" color={month.is_current ? 'primary.contrastText' : month.is_future ? 'info.contrastText' : 'text.secondary'}>
+                    {month.is_future ? 'Valor Previsto' : 'Valor Recebido'}
                   </Typography>
-                  <Typography variant="h6" color="error.main">
-                    {month.pending_students}
+                  <Typography variant="h6" color={month.is_current ? 'primary.contrastText' : month.is_future ? 'info.contrastText' : 'success.main'}>
+                    {formatCurrency(month.is_future ? month.total_expected : month.total_received)}
                   </Typography>
-                </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Valor Recebido
-                  </Typography>
-                  <Typography variant="h6" color="success.main">
-                    {formatCurrency(month.total_received)}
-                  </Typography>
-                </Box>                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Valor Pendente
-                  </Typography>
-                  <Typography variant="h6" color="error.main">
-                    {formatCurrency(month.total_pending)}
-                  </Typography>
-                </Box>
+                </Box>                
+                
+                {!month.is_future && (
+                  <Box>
+                    <Typography variant="body2" color={month.is_current ? 'primary.contrastText' : 'text.secondary'}>
+                      Valor Pendente
+                    </Typography>
+                    <Typography variant="h6" color={month.is_current ? 'error.light' : 'error.main'}>
+                      {formatCurrency(month.total_pending)}
+                    </Typography>
+                  </Box>
+                )}
 
                 {user?.is_staff && month.physiotherapist_breakdown.length > 0 && (
                   <>

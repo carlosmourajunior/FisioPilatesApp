@@ -17,7 +17,7 @@ import {
   FormControlLabel,
   Chip,
 } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, AttachMoney as AttachMoneyIcon } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, AttachMoney as AttachMoneyIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/axios';
 import { BaseLayout } from '../shared/BaseLayout';
@@ -247,11 +247,20 @@ const StudentList: React.FC = () => {
                       }
                       label={student.active ? 'Ativo' : 'Inativo'}
                     />
-                  </TableCell>
-                  <TableCell align="right">
-                    {student.modality_details && (                      <IconButton
+                  </TableCell>                  <TableCell align="right">
+                    <IconButton
+                      color="info"
+                      component={Link}
+                      to={`/students/details/${student.id}`}
+                      title="Ver detalhes"
+                    >
+                      <VisibilityIcon />
+                    </IconButton>
+                    {student.modality_details && (
+                      <IconButton
                         color="primary"
                         onClick={() => handlePaymentClick(student)}
+                        title="Registrar pagamento"
                       >
                         <AttachMoneyIcon />
                       </IconButton>
@@ -260,12 +269,14 @@ const StudentList: React.FC = () => {
                       color="primary"
                       component={Link}
                       to={`/students/edit/${student.id}`}
+                      title="Editar"
                     >
                       <EditIcon />
                     </IconButton>
                     <IconButton
                       color="error"
                       onClick={() => handleDelete(student.id)}
+                      title="Excluir"
                     >
                       <DeleteIcon />
                     </IconButton>

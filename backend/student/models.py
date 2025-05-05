@@ -11,7 +11,18 @@ class Student(models.Model):
     date_of_birth = models.DateField(blank=True, null=True)
     registration_date = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
-    notes = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)    
+    
+    PAYMENT_TYPE_CHOICES = [
+        ('PRE', 'Pré-pago'),
+        ('POS', 'Pós-pago'),
+    ]
+    payment_type = models.CharField(
+        max_length=3,
+        choices=PAYMENT_TYPE_CHOICES,
+        default='PRE',
+        verbose_name='Tipo de Pagamento'
+    )
     payment_date = models.DateField(
         blank=True, 
         null=True,
@@ -31,6 +42,7 @@ class Student(models.Model):
         blank=True,
         related_name='students'
     )
+    
     modality = models.ForeignKey(
         Modality,
         on_delete=models.PROTECT,

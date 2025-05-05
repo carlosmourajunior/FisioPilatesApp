@@ -12,7 +12,8 @@ import {
   MenuItem,
   Select,
   FormControl,
-  InputLabel
+  InputLabel,
+  SelectChangeEvent
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BaseLayout } from '../shared/BaseLayout';
@@ -49,6 +50,7 @@ interface StudentFormData {
   email: string;
   phone: string;
   date_of_birth: Date | null;
+  payment_type: 'PRE' | 'POS';
   active: boolean;
   notes: string;
   physiotherapist?: number | null;
@@ -72,6 +74,7 @@ const StudentForm: React.FC = () => {
     email: '',
     phone: '',
     date_of_birth: null,
+    payment_type: 'PRE',
     active: true,
     notes: '',
     physiotherapist: null,
@@ -187,13 +190,27 @@ const StudentForm: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, checked } = event.target;
+  };  const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'active' ? checked : value
+      [name]: value
+    }));
+  };
+
+  const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = event.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: checked
+    }));
+  };
+
+  const handleSelectChange = (event: SelectChangeEvent) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
     }));
   };
   const handleModalityChange = (event: any) => {
@@ -234,7 +251,7 @@ const StudentForm: React.FC = () => {
                 label="Nome"
                 name="name"
                 value={formData.name}
-                onChange={handleChange}
+                onChange={handleTextChange}
                 required
                 disabled={loading}
               />
@@ -244,7 +261,7 @@ const StudentForm: React.FC = () => {
                 name="email"
                 type="email"
                 value={formData.email}
-                onChange={handleChange}
+                onChange={handleTextChange}
                 disabled={loading}
               />
               <TextField
@@ -252,7 +269,7 @@ const StudentForm: React.FC = () => {
                 label="Telefone"
                 name="phone"
                 value={formData.phone}
-                onChange={handleChange}
+                onChange={handleTextChange}
                 disabled={loading}
               />
               <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
@@ -269,6 +286,21 @@ const StudentForm: React.FC = () => {
                   }}
                 />
               </LocalizationProvider>
+
+              <FormControl fullWidth required>
+                <InputLabel id="payment-type-label">Tipo de Pagamento</InputLabel>
+                <Select
+                  labelId="payment-type-label"
+                  label="Tipo de Pagamento"
+                  name="payment_type"
+                  value={formData.payment_type}
+                  onChange={handleSelectChange}
+                  disabled={loading}
+                >
+                  <MenuItem value="PRE">Pré-pago</MenuItem>
+                  <MenuItem value="POS">Pós-pago</MenuItem>
+                </Select>
+              </FormControl>
 
               <FormControl fullWidth required>
                 <InputLabel id="modality-label">Modalidade</InputLabel>
@@ -304,9 +336,8 @@ const StudentForm: React.FC = () => {
                   <Select
                     labelId="physiotherapist-label"
                     label="Fisioterapeuta"
-                    name="physiotherapist"
-                    value={formData.physiotherapist || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, physiotherapist: e.target.value ? Number(e.target.value) : null }))}
+                    name="physiotherapist"                    value={formData.physiotherapist?.toString() || ''}
+                    onChange={handleSelectChange}
                     disabled={loading}
                   >
                     <MenuItem value="">
@@ -318,7 +349,8 @@ const StudentForm: React.FC = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                </FormControl>              )}
+                </FormControl>
+              )}
 
               <TextField
                 fullWidth
@@ -326,13 +358,14 @@ const StudentForm: React.FC = () => {
                 name="commission"
                 type="number"
                 value={formData.commission}
-                onChange={handleChange}
+                onChange={handleTextChange}
                 inputProps={{
                   min: 0,
                   max: 100,
                   step: 1
                 }}
                 helperText="Porcentagem de comissão (entre 0 e 100%)"
+                disabled={loading}
               />
 
               <TextField
@@ -340,7 +373,7 @@ const StudentForm: React.FC = () => {
                 label="Observações"
                 name="notes"
                 value={formData.notes}
-                onChange={handleChange}
+                onChange={handleTextChange}
                 multiline
                 rows={4}
                 disabled={loading}
@@ -350,7 +383,7 @@ const StudentForm: React.FC = () => {
                 control={
                   <Switch
                     checked={formData.active}
-                    onChange={handleChange}
+                    onChange={handleSwitchChange}
                     name="active"
                     disabled={loading}
                   />

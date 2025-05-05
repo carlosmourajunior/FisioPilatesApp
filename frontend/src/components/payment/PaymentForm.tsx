@@ -26,6 +26,7 @@ import { format } from 'date-fns';
 import { PaymentService } from '../../services/PaymentService';
 import { PaymentFormData, PaymentStatus } from '../../types/payment';
 import PaymentHistory from './PaymentHistory';
+import api from '../../utils/axios';
 
 interface PaymentFormProps {
   open: boolean;
@@ -51,7 +52,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>({ payment_type: 'MONTHLY' });
   const [payments, setPayments] = useState<any[]>([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
 
@@ -82,31 +83,53 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       console.error('Error deleting payment:', error);
     }
   };
-
   const fetchPaymentStatus = async () => {
     try {
-      const status = await PaymentService.getPaymentStatus(studentId);
+      const [status, studentResponse] = await Promise.all([
+        PaymentService.getPaymentStatus(studentId),
+        api.get(`/api/students/${studentId}/`)
+      ]);
+      
       setPaymentStatus(status);
       
+      // Definir o mês de referência baseado no tipo de pagamento do aluno
+      const student = studentResponse.data;
+      const today = new Date();
+      let referenceMonth = new Date();
+      
+      if (student.payment_type === 'POS') {
+        // Para pós-pago, usa o mês anterior
+        referenceMonth.setMonth(today.getMonth() - 1);
+      }
+      // Para pré-pago, usa o mês atual (já é o padrão)
+      
       if (status.modality_price) {
-        setFormData(prev => ({ ...prev, amount: status.modality_price }));
+        setFormData(prev => ({
+          ...prev,
+          amount: status.modality_price,
+          reference_month: referenceMonth
+        }));
       }
     } catch (error) {
       console.error('Error fetching payment status:', error);
     }
-  };
-  useEffect(() => {
+  };useEffect(() => {
     if (open) {
-      fetchPaymentStatus();
-      fetchPayments();
-      // Reset the form data when opening the dialog
-      setFormData({
-        student: studentId,
-        modality: modalityId,
-        amount: 0,
-        payment_date: new Date(),
-        reference_month: new Date(),
-      });
+      const initialize = async () => {
+        await fetchPaymentStatus();
+        await fetchPayments();
+        // Reset the form data when opening the dialog
+        setFormData(prev => ({
+          ...prev,
+          student: studentId,
+          modality: modalityId,
+          amount: 0,
+          payment_date: new Date(),
+          reference_month: new Date(),
+        }));
+      };
+      
+      initialize();
     }
   }, [studentId, modalityId, open]);
 
@@ -202,23 +225,20 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                     required: true
                   }
                 }}
+              />              {/* Sempre mostrar o DatePicker de mês de referência já que é necessário */}
+              <DatePicker
+                label="Mês de Referência"
+                value={formData.reference_month}
+                onChange={(date) => handleChange('reference_month')(date)}
+                format="MM/yyyy"
+                views={['month', 'year']}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    required: true
+                  }
+                }}
               />
-
-              {paymentStatus?.payment_type === 'MONTHLY' && (
-                <DatePicker
-                  label="Mês de Referência"
-                  value={formData.reference_month}
-                  onChange={(date) => handleChange('reference_month')(date)}
-                  format="MM/yyyy"
-                  views={['month', 'year']}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      required: true
-                    }
-                  }}
-                />
-              )}
             </LocalizationProvider>
 
             <TextField
