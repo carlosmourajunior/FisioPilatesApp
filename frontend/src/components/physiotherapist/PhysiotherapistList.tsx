@@ -60,84 +60,119 @@ const PhysiotherapistList: React.FC = () => {
   useEffect(() => {
     fetchPhysiotherapists();
   }, []);
+
+  const isMobile = window.innerWidth <= 600;
+
   return (
     <BaseLayout>
-      <Box sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h4" component="h1">
-          Fisioterapeutas
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          component={Link}
-          to="/physiotherapists/new"
-        >
-          Novo Fisioterapeuta
-        </Button>
-      </Box>
+      <Box sx={{ p: isMobile ? 2 : 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', mb: 3, gap: 2 }}>
+          <Typography variant={isMobile ? "h5" : "h4"} component="h1">
+            Fisioterapeutas
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            component={Link}
+            to="/physiotherapists/new"
+            fullWidth={isMobile}
+          >
+            Novo Fisioterapeuta
+          </Button>
+        </Box>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Nome</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>CREFITO</TableCell>
-              <TableCell>Telefone</TableCell>
-              <TableCell>Especialização</TableCell>
-              <TableCell align="right">Ações</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {physiotherapists.map((physio: Physiotherapist) => (
-              <TableRow key={physio.id}>
-                <TableCell>{`${physio.first_name} ${physio.last_name}`}</TableCell>
-                <TableCell>{physio.email}</TableCell>
-                <TableCell>{physio.crefito}</TableCell>
-                <TableCell>{physio.phone}</TableCell>
-                <TableCell>{physio.specialization}</TableCell>
-                <TableCell align="right">
-                  <IconButton
-                    color="primary"
-                    component={Link}
-                    to={`/physiotherapists/edit/${physio.id}`}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDelete(physio.id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
+        <TableContainer component={Paper}>
+          <Table size={isMobile ? "small" : "medium"}>
+            <TableHead>
+              <TableRow>
+                <TableCell>Nome</TableCell>
+                {!isMobile && (
+                  <>
+                    <TableCell>Email</TableCell>
+                    <TableCell>CREFITO</TableCell>
+                    <TableCell>Telefone</TableCell>
+                    <TableCell>Especialização</TableCell>
+                  </>
+                )}
+                <TableCell align="right">Ações</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {physiotherapists.map((physio: Physiotherapist) => (
+                <TableRow key={physio.id}>
+                  <TableCell>
+                    {`${physio.first_name} ${physio.last_name}`}
+                    {isMobile && (
+                      <>
+                        <Typography variant="caption" display="block" color="text.secondary">
+                          CREFITO: {physio.crefito}
+                        </Typography>
+                        <Typography variant="caption" display="block" color="text.secondary">
+                          {physio.phone}
+                        </Typography>
+                      </>
+                    )}
+                  </TableCell>
+                  {!isMobile && (
+                    <>
+                      <TableCell>{physio.email}</TableCell>
+                      <TableCell>{physio.crefito}</TableCell>
+                      <TableCell>{physio.phone}</TableCell>
+                      <TableCell>{physio.specialization}</TableCell>
+                    </>
+                  )}
+                  <TableCell align="right">
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                      <IconButton
+                        color="primary"
+                        component={Link}
+                        to={`/physiotherapists/edit/${physio.id}`}
+                        size={isMobile ? "small" : "medium"}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDelete(physio.id)}
+                        size={isMobile ? "small" : "medium"}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {physiotherapists.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={isMobile ? 2 : 6} align="center">
+                    Nenhum fisioterapeuta encontrado
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => setError(null)}
-      >
-        <Alert severity="error" onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      </Snackbar>
+        <Snackbar
+          open={!!error}
+          autoHideDuration={6000}
+          onClose={() => setError(null)}
+        >
+          <Alert severity="error" onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        </Snackbar>
 
-      <Snackbar
-        open={!!successMessage}
-        autoHideDuration={6000}
-        onClose={() => setSuccessMessage(null)}
-      >
-        <Alert severity="success" onClose={() => setSuccessMessage(null)}>
-          {successMessage}
-        </Alert>
-      </Snackbar>    </Box>
+        <Snackbar
+          open={!!successMessage}
+          autoHideDuration={6000}
+          onClose={() => setSuccessMessage(null)}
+        >
+          <Alert severity="success" onClose={() => setSuccessMessage(null)}>
+            {successMessage}
+          </Alert>
+        </Snackbar>    </Box>
     </BaseLayout>
   );
 };
