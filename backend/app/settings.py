@@ -39,10 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',    'authentication',
-    'physiotherapist',
-    'student',
+    'physiotherapist',    'student',
     'modality',
     'schedule',
+    'payment',
 ]
 
 MIDDLEWARE = [
