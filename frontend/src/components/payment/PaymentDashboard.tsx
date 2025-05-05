@@ -127,11 +127,13 @@ const PaymentDashboard: FC = () => {
     setSelectedPhysiotherapist(event.target.value ? Number(event.target.value) : null);
   };
 
+  const isMobile = window.innerWidth <= 600;
+
   return (
     <BaseLayout>
-      <Box sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" component="h1">
+      <Box sx={{ p: isMobile ? 2 : 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', mb: 3, gap: 2 }}>
+          <Typography variant={isMobile ? "h5" : "h4"} component="h1">
             Dashboard de Pagamentos
           </Typography>
         </Box>
@@ -148,7 +150,8 @@ const PaymentDashboard: FC = () => {
                   views={['month', 'year']}
                   slotProps={{
                     textField: {
-                      fullWidth: true
+                      fullWidth: true,
+                      size: isMobile ? "small" : "medium"
                     }
                   }}
                 />
@@ -158,7 +161,7 @@ const PaymentDashboard: FC = () => {
           {user?.is_staff && (
             <Grid item xs={12} md={6}>
               <Paper sx={{ p: 2 }}>
-                <FormControl fullWidth>
+                <FormControl fullWidth size={isMobile ? "small" : "medium"}>
                   <InputLabel id="physiotherapist-select-label">Fisioterapeuta</InputLabel>
                   <Select
                     labelId="physiotherapist-select-label"
@@ -166,7 +169,8 @@ const PaymentDashboard: FC = () => {
                     label="Fisioterapeuta"
                     onChange={handlePhysiotherapistChange}
                   >
-                    <MenuItem value="">Todos</MenuItem>                    {physiotherapists.map((physio) => (
+                    <MenuItem value="">Todos</MenuItem>
+                    {physiotherapists.map((physio) => (
                       <MenuItem key={physio.id} value={physio.id}>
                         {`${physio.first_name} ${physio.last_name}`}
                       </MenuItem>
@@ -180,14 +184,14 @@ const PaymentDashboard: FC = () => {
 
         {summary && (
           <>
-            <Grid container spacing={3} mb={3}>
+            <Grid container spacing={2} mb={3}>
               <Grid item xs={12} md={4}>
                 <Card>
                   <CardContent>
-                    <Typography variant="h6" gutterBottom color="success.main">
+                    <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom color="success.main">
                       Total Recebido
                     </Typography>
-                    <Typography variant="h4" color="success.main">
+                    <Typography variant={isMobile ? "h5" : "h4"} color="success.main">
                       {formatCurrency(summary.totalReceivedValue)}
                     </Typography>
                     <Divider sx={{ my: 1 }} />
@@ -200,10 +204,10 @@ const PaymentDashboard: FC = () => {
               <Grid item xs={12} md={4}>
                 <Card>
                   <CardContent>
-                    <Typography variant="h6" gutterBottom color="error.main">
+                    <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom color="error.main">
                       Total Pendente
                     </Typography>
-                    <Typography variant="h4" color="error.main">
+                    <Typography variant={isMobile ? "h5" : "h4"} color="error.main">
                       {formatCurrency(summary.totalPendingValue)}
                     </Typography>
                     <Divider sx={{ my: 1 }} />
@@ -216,10 +220,10 @@ const PaymentDashboard: FC = () => {
               <Grid item xs={12} md={4}>
                 <Card>
                   <CardContent>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom>
                       Total Esperado
                     </Typography>
-                    <Typography variant="h4">
+                    <Typography variant={isMobile ? "h5" : "h4"}>
                       {formatCurrency(summary.totalExpectedValue)}
                     </Typography>
                     <Divider sx={{ my: 1 }} />
@@ -234,16 +238,20 @@ const PaymentDashboard: FC = () => {
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
                 <Paper sx={{ p: 2 }}>
-                  <Typography variant="h6" gutterBottom color="success.main">
+                  <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom color="success.main">
                     Alunos com Pagamento Realizado
                   </Typography>
                   <TableContainer>
-                    <Table size="small">
+                    <Table size={isMobile ? "small" : "medium"}>
                       <TableHead>
                         <TableRow>
                           <TableCell>Nome</TableCell>
-                          <TableCell>Modalidade</TableCell>
-                          <TableCell>Data do Pagamento</TableCell>
+                          {!isMobile && (
+                            <>
+                              <TableCell>Modalidade</TableCell>
+                              <TableCell>Data do Pagamento</TableCell>
+                            </>
+                          )}
                           <TableCell>Valor</TableCell>
                           <TableCell align="center">Status</TableCell>
                         </TableRow>
@@ -251,11 +259,22 @@ const PaymentDashboard: FC = () => {
                       <TableBody>
                         {summary.paidList.map((student) => (
                           <TableRow key={student.id}>
-                            <TableCell>{student.name}</TableCell>
-                            <TableCell>{student.modality_name}</TableCell>
                             <TableCell>
-                              {new Date(student.payment_date).toLocaleDateString('pt-BR')}
+                              {student.name}
+                              {isMobile && (
+                                <Typography variant="caption" display="block" color="text.secondary">
+                                  {new Date(student.payment_date).toLocaleDateString('pt-BR')}
+                                </Typography>
+                              )}
                             </TableCell>
+                            {!isMobile && (
+                              <>
+                                <TableCell>{student.modality_name}</TableCell>
+                                <TableCell>
+                                  {new Date(student.payment_date).toLocaleDateString('pt-BR')}
+                                </TableCell>
+                              </>
+                            )}
                             <TableCell>{formatCurrency(student.amount)}</TableCell>
                             <TableCell align="center">
                               <Chip label="Pago" color="success" size="small" />
@@ -264,7 +283,7 @@ const PaymentDashboard: FC = () => {
                         ))}
                         {summary.paidList.length === 0 && (
                           <TableRow>
-                            <TableCell colSpan={5} align="center">
+                            <TableCell colSpan={isMobile ? 3 : 5} align="center">
                               Nenhum aluno com pagamento realizado
                             </TableCell>
                           </TableRow>
@@ -274,26 +293,34 @@ const PaymentDashboard: FC = () => {
                   </TableContainer>
                 </Paper>
               </Grid>
+
               <Grid item xs={12} md={6}>
                 <Paper sx={{ p: 2 }}>
-                  <Typography variant="h6" gutterBottom color="error.main">
+                  <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom color="error.main">
                     Alunos com Pagamento Pendente
                   </Typography>
                   <TableContainer>
-                    <Table size="small">
+                    <Table size={isMobile ? "small" : "medium"}>
                       <TableHead>
                         <TableRow>
                           <TableCell>Nome</TableCell>
-                          <TableCell>Modalidade</TableCell>
-                          <TableCell>Valor Esperado</TableCell>
+                          {!isMobile && <TableCell>Modalidade</TableCell>}
+                          <TableCell>Valor</TableCell>
                           <TableCell align="center">Status</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         {summary.pendingList.map((student) => (
                           <TableRow key={student.id}>
-                            <TableCell>{student.name}</TableCell>
-                            <TableCell>{student.modality_name}</TableCell>
+                            <TableCell>
+                              {student.name}
+                              {isMobile && (
+                                <Typography variant="caption" display="block" color="text.secondary">
+                                  {student.modality_name}
+                                </Typography>
+                              )}
+                            </TableCell>
+                            {!isMobile && <TableCell>{student.modality_name}</TableCell>}
                             <TableCell>{formatCurrency(student.expected_amount)}</TableCell>
                             <TableCell align="center">
                               <Chip label="Pendente" color="error" size="small" />
@@ -302,7 +329,7 @@ const PaymentDashboard: FC = () => {
                         ))}
                         {summary.pendingList.length === 0 && (
                           <TableRow>
-                            <TableCell colSpan={4} align="center">
+                            <TableCell colSpan={isMobile ? 3 : 4} align="center">
                               Nenhum aluno com pagamento pendente
                             </TableCell>
                           </TableRow>
