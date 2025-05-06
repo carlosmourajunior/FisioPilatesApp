@@ -41,7 +41,7 @@ class Student(models.Model):
         null=True,
         blank=True,
         related_name='students'
-    )
+    )    
     
     modality = models.ForeignKey(
         Modality,
@@ -49,14 +49,14 @@ class Student(models.Model):
         related_name='students',
         verbose_name='Modalidade',
         null=True,
-        blank=True
     )
+    
     commission = models.DecimalField(
         max_digits=5,
         decimal_places=2,
         default=50.00,
         verbose_name='Comissão (%)',
-        help_text='Porcentagem de comissão (entre 0 e 100)',        
+        help_text='Porcentagem de comissão (entre 0 e 100)',
         validators=[
             MinValueValidator(0),
             MaxValueValidator(100)

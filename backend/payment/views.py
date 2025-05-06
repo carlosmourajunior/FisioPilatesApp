@@ -309,20 +309,38 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 'total_received': 0,
                 'total_expected': 0,
                 'total_pending': 0
-            }
-        )        # Calcula o total de comissões a receber de todas as fisioterapeutas        
+            }        )          # Filtra os estudantes baseado no usuário
         if self.request.user.is_staff:
-            # Atualiza o total de comissões com base no resumo dos fisioterapeutas            
-            total_commissions = sum(
-                physio.get('commission_to_pay', 0) 
-                for physio in physiotherapist_summary
+            active_students = students.filter(active=True, modality__isnull=False)
+        else:
+            active_students = students.filter(
+                active=True, 
+                modality__isnull=False,
+                physiotherapist=self.request.user.physiotherapist
             )
-            
-            # Calculate expected commissions based on active students
-            active_students = Student.objects.filter(active=True, modality__isnull=False)
-            for student in active_students:
-                if student.commission is not None and student.modality is not None:
-                    total_expected_commissions += float(student.modality.price) * (float(student.commission) / 100)
+
+        # Pega os pagamentos do mês atual
+        current_month_payments = Payment.objects.filter(
+            student__in=active_students,
+            reference_month__year=current_date.year,
+            reference_month__month=current_date.month
+        )
+
+        # Calcula comissões dos pagamentos já recebidos
+        total_commissions = 0
+        for payment in current_month_payments:
+            if payment.student.commission is not None:
+                total_commissions += float(payment.amount) * (float(payment.student.commission) / 100)
+
+        # Calcula comissões esperadas apenas dos pagamentos pendentes
+        total_expected_commissions = 0
+        pending_students = active_students.exclude(
+            id__in=current_month_payments.values_list('student_id', flat=True)
+        )
+        
+        for student in pending_students:
+            if student.commission is not None and student.modality is not None:
+                total_expected_commissions += float(student.modality.price) * (float(student.commission) / 100)
 
         response_data = {
             'total_students': total_students,
@@ -335,10 +353,16 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 'total_commissions': total_commissions,
                 'total_expected_commissions': total_expected_commissions
             }
-        }
-
+        }        # Inclui o resumo do fisioterapeuta na resposta
         if self.request.user.is_staff:
+            # Para admin, inclui todos os fisioterapeutas
             response_data['physiotherapist_summary'] = physiotherapist_summary
+        else:
+            # Para fisioterapeuta, inclui apenas seus próprios dados
+            response_data['physiotherapist_summary'] = [
+                physio for physio in physiotherapist_summary 
+                if physio['id'] == self.request.user.physiotherapist.id
+            ]
 
         return Response(response_data)
 

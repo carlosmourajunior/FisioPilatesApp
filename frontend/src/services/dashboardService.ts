@@ -31,6 +31,7 @@ interface CurrentMonthSummary {
   total_pending: number;
   total_overdue: number;
   total_commissions: number;
+  total_expected_commissions: number;
 }
 
 export interface DashboardSummary {
