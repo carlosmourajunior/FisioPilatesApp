@@ -11,10 +11,10 @@ const Main = styled('main')<{
 }>(({ theme }) => ({
   flexGrow: 1,
   padding: theme.spacing(3),
-  transition: theme.transitions.create('margin', {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: drawerWidth,
+    width: `calc(100% - ${drawerWidth}px)`,
+  },
 }));
 
 interface BaseLayoutProps {
@@ -22,20 +22,28 @@ interface BaseLayoutProps {
 }
 
 export const BaseLayout: React.FC<BaseLayoutProps> = ({ children }) => {
-  const [open, setOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const isMobile = window.innerWidth <= 600;
 
   const handleDrawerToggle = () => {
-    setOpen(!open);
+    setMobileOpen(!mobileOpen);
   };
 
   const handleCloseDrawer = () => {
-    setOpen(false);
+    if (isMobile) {
+      setMobileOpen(false);
+    }
   };
 
   return (
     <Box sx={{ display: 'flex' }}>
       <Header onMenuClick={handleDrawerToggle} />
-      <Sidebar open={open} drawerWidth={drawerWidth} onClose={handleCloseDrawer} />
+      <Sidebar 
+        open={isMobile ? mobileOpen : true} 
+        drawerWidth={drawerWidth} 
+        onClose={handleCloseDrawer}
+        isMobile={isMobile}
+      />
       <Main>
         <Toolbar />
         {children}
