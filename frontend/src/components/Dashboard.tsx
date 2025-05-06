@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Card, CardContent, Grid, Box, CircularProgress } from '@mui/material';
+import { Typography, Card, CardContent, Grid, Box, CircularProgress, Tooltip } from '@mui/material';
 import type { Theme } from '@mui/material';
 import type { SxProps } from '@mui/system';
 import { 
@@ -128,6 +128,38 @@ export const Dashboard: React.FC = () => {
                 <Typography variant={windowWidth <= 600 ? "h6" : "h4"} color="error.main">
                   {formatCurrency(dashboardData?.current_month_summary?.total_overdue || 0)}
                 </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        </GridComponent>        <GridComponent item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent sx={{ py: windowWidth <= 600 ? 1 : 2 }}>
+              <Box textAlign="center">                <MonetizationOnIcon sx={{ fontSize: windowWidth <= 600 ? 32 : 40, color: 'purple', mb: 1 }} />
+                <Tooltip title="Valor a ser repassado para a clínica referente aos pagamentos já recebidos no mês atual">
+                  <Box>
+                    <Typography variant={windowWidth <= 600 ? "subtitle1" : "h6"}>A Pagar para Clínica</Typography>
+                    <Typography variant={windowWidth <= 600 ? "h6" : "h4"} color="purple">
+                      {formatCurrency(dashboardData?.current_month_summary?.total_commissions || 0)}
+                    </Typography>
+                  </Box>
+                </Tooltip>
+              </Box>
+            </CardContent>
+          </Card>
+        </GridComponent>
+
+        <GridComponent item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent sx={{ py: windowWidth <= 600 ? 1 : 2 }}>
+              <Box textAlign="center">                <MonetizationOnIcon sx={{ fontSize: windowWidth <= 600 ? 32 : 40, color: 'info.main', mb: 1 }} />
+                <Tooltip title="Valor total a ser repassado para a clínica quando todos os pagamentos pendentes forem recebidos">
+                  <Box>
+                    <Typography variant={windowWidth <= 600 ? "subtitle1" : "h6"}>Previsão para Clínica</Typography>
+                    <Typography variant={windowWidth <= 600 ? "h6" : "h4"} color="info.main">
+                      {formatCurrency(dashboardData?.current_month_summary?.total_expected_commissions || 0)}
+                    </Typography>
+                  </Box>
+                </Tooltip>
               </Box>
             </CardContent>
           </Card>
