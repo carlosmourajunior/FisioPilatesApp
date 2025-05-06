@@ -23,14 +23,23 @@ import { useAuth } from '../../contexts/AuthContext';
 interface SidebarProps {
   open: boolean;
   drawerWidth: number;
+  onClose: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ open, drawerWidth }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ open, drawerWidth, onClose }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    onClose();
+  };
+
   return (
     <Drawer
+      variant="temporary"
+      open={open}
+      onClose={onClose}
       sx={{
         width: drawerWidth,
         flexShrink: 0,
@@ -39,15 +48,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, drawerWidth }) => {
           boxSizing: 'border-box',
         },
       }}
-      variant="persistent"
-      anchor="left"
-      open={open}
     >
       <Toolbar />
       <Box sx={{ overflow: 'auto' }}>
         <List>
           <ListItem disablePadding>
-            <ListItemButton onClick={() => navigate('/')}>
+            <ListItemButton onClick={() => handleNavigate('/')}>
               <ListItemIcon>
                 <DashboardIcon />
               </ListItemIcon>
@@ -56,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, drawerWidth }) => {
           </ListItem>
           {user?.is_staff && (
             <ListItem disablePadding>
-              <ListItemButton onClick={() => navigate('/physiotherapists')}>
+              <ListItemButton onClick={() => handleNavigate('/physiotherapists')}>
                 <ListItemIcon>
                   <PersonAddIcon />
                 </ListItemIcon>
@@ -65,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, drawerWidth }) => {
             </ListItem>
           )}
           <ListItem disablePadding>
-            <ListItemButton onClick={() => navigate('/students')}>
+            <ListItemButton onClick={() => handleNavigate('/students')}>
               <ListItemIcon>
                 <SchoolIcon />
               </ListItemIcon>
@@ -73,14 +79,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, drawerWidth }) => {
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
-            <ListItemButton onClick={() => navigate('/modalities')}>
+            <ListItemButton onClick={() => handleNavigate('/modalities')}>
               <ListItemIcon>
                 <FitnessCenterIcon />
               </ListItemIcon>
               <ListItemText primary="Modalidades" />
             </ListItemButton>
           </ListItem>
-          <ListItem disablePadding>            <ListItemButton onClick={() => navigate('/calendar')}>
+          <ListItem disablePadding>            <ListItemButton onClick={() => handleNavigate('/calendar')}>
               <ListItemIcon>
                 <CalendarMonthIcon />
               </ListItemIcon>
@@ -88,7 +94,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, drawerWidth }) => {
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
-            <ListItemButton onClick={() => navigate('/payments')}>
+            <ListItemButton onClick={() => handleNavigate('/payments')}>
               <ListItemIcon>
                 <PaymentsIcon />
               </ListItemIcon>

@@ -32,6 +32,17 @@ export const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<DashboardSummary | null>(null);
+  const isMobile = window.innerWidth <= 600;
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -71,21 +82,22 @@ export const Dashboard: React.FC = () => {
 
   return (
     <BaseLayout>
-      <Typography variant="h4" gutterBottom>
-        Bem-vindo ao Sistema de Fisioterapia e Pilates
+      <Typography variant={windowWidth <= 600 ? "h5" : "h4"} gutterBottom>
+        Bem-vindo ao Sistema
       </Typography>
       
-      {/* Summary Statistics */}      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
+      {/* Summary Statistics */}      
+      <Typography variant={windowWidth <= 600 ? "h6" : "h5"} gutterBottom sx={{ mt: 4 }}>
         Resumo Geral
       </Typography>
-      <GridComponent container spacing={3} sx={{ mb: 4 }}>
+      <GridComponent container spacing={2} sx={{ mb: 4 }}>
         <GridComponent item xs={12} sm={6} md={4}>
           <Card>
-            <CardContent>
+            <CardContent sx={{ py: windowWidth <= 600 ? 1 : 2 }}>
               <Box textAlign="center">
-                <WalletIcon sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
-                <Typography variant="h6">Recebido no Mês</Typography>
-                <Typography variant="h4" color="success.main">
+                <WalletIcon sx={{ fontSize: windowWidth <= 600 ? 32 : 40, color: 'success.main', mb: 1 }} />
+                <Typography variant={windowWidth <= 600 ? "subtitle1" : "h6"}>Recebido</Typography>
+                <Typography variant={windowWidth <= 600 ? "h6" : "h4"} color="success.main">
                   {formatCurrency(dashboardData?.current_month_summary?.total_received || 0)}
                 </Typography>
               </Box>
@@ -95,11 +107,11 @@ export const Dashboard: React.FC = () => {
 
         <GridComponent item xs={12} sm={6} md={4}>
           <Card>
-            <CardContent>
+            <CardContent sx={{ py: windowWidth <= 600 ? 1 : 2 }}>
               <Box textAlign="center">
-                <TrendingUpIcon sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
-                <Typography variant="h6">A Receber no Mês</Typography>
-                <Typography variant="h4" color="info.main">
+                <TrendingUpIcon sx={{ fontSize: windowWidth <= 600 ? 32 : 40, color: 'info.main', mb: 1 }} />
+                <Typography variant={windowWidth <= 600 ? "subtitle1" : "h6"}>A Receber</Typography>
+                <Typography variant={windowWidth <= 600 ? "h6" : "h4"} color="info.main">
                   {formatCurrency(dashboardData?.current_month_summary?.total_pending || 0)}
                 </Typography>
               </Box>
@@ -109,11 +121,11 @@ export const Dashboard: React.FC = () => {
 
         <GridComponent item xs={12} sm={6} md={4}>
           <Card>
-            <CardContent>
+            <CardContent sx={{ py: windowWidth <= 600 ? 1 : 2 }}>
               <Box textAlign="center">
-                <WalletIcon sx={{ fontSize: 40, color: 'error.main', mb: 1 }} />
-                <Typography variant="h6">Total Atrasado</Typography>
-                <Typography variant="h4" color="error.main">
+                <WalletIcon sx={{ fontSize: windowWidth <= 600 ? 32 : 40, color: 'error.main', mb: 1 }} />
+                <Typography variant={windowWidth <= 600 ? "subtitle1" : "h6"}>Atrasado</Typography>
+                <Typography variant={windowWidth <= 600 ? "h6" : "h4"} color="error.main">
                   {formatCurrency(dashboardData?.current_month_summary?.total_overdue || 0)}
                 </Typography>
               </Box>
@@ -122,59 +134,42 @@ export const Dashboard: React.FC = () => {
         </GridComponent>
       </GridComponent>
 
-      {/* Monthly Statistics */}
+      {/* Physiotherapist Summary - Mobile optimized */}
       {user?.is_staff && dashboardData?.physiotherapist_summary && (
         <>
-          <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
+          <Typography variant={windowWidth <= 600 ? "h6" : "h5"} gutterBottom sx={{ mt: 4 }}>
             Resumo por Fisioterapeuta
           </Typography>
-          <GridComponent container spacing={3} sx={{ mb: 4 }}>
+          <GridComponent container spacing={2} sx={{ mb: 4 }}>
             {dashboardData.physiotherapist_summary.map((physio) => (
-              <GridComponent item xs={12} sm={6} md={4} key={physio.id}>
+              <GridComponent item xs={12} key={physio.id}>
                 <Card>
-                  <CardContent>                    <Typography variant="h6" gutterBottom>
-                      {physio.name}
-                    </Typography>
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Total de Alunos
+                  <CardContent sx={{ py: windowWidth <= 600 ? 1 : 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                      <Typography variant="h6" sx={{ fontSize: windowWidth <= 600 ? '1.1rem' : '1.25rem' }}>
+                        {physio.name}
                       </Typography>
-                      <Typography variant="h6">
-                        {physio.total_students}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Faturamento do Mês
-                      </Typography>
-                      <Typography variant="h6" color="success.main">
+                      <Typography variant="h6" color="success.main" sx={{ fontSize: windowWidth <= 600 ? '1.1rem' : '1.25rem' }}>
                         {formatCurrency(physio.total_month_revenue)}
                       </Typography>
                     </Box>
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Comissão a Pagar
-                      </Typography>
-                      <Typography variant="h6" color="purple.main">
-                        {formatCurrency(physio.commission_to_pay)}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Alunos Pagantes (Mês Atual)
-                      </Typography>
-                      <Typography variant="h6" color="success.main">
-                        {physio.paid_students}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Alunos Pendentes (Mês Atual)
-                      </Typography>
-                      <Typography variant="h6" color="error.main">
-                        {physio.pending_students}
-                      </Typography>
-                    </Box>
+                    <Grid container spacing={1}>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">
+                          Total Alunos: {physio.total_students}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">
+                          Pagantes: {physio.paid_students}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="body2" color="purple">
+                          Comissão: {formatCurrency(physio.commission_to_pay)}
+                        </Typography>
+                      </Grid>
+                    </Grid>
                   </CardContent>
                 </Card>
               </GridComponent>
@@ -183,10 +178,11 @@ export const Dashboard: React.FC = () => {
         </>
       )}
 
-      {/* Monthly Statistics */}      <Typography variant="h5" gutterBottom>
+      {/* Monthly Summary - Mobile optimized */}
+      <Typography variant={windowWidth <= 600 ? "h6" : "h5"} gutterBottom>
         Resumo dos Últimos Meses
       </Typography>
-      <GridComponent container spacing={3}>
+      <GridComponent container spacing={2}>
         {dashboardData?.monthly_summary
           .filter(month => month.total_expected > 0 || month.is_future)
           .map((month: MonthSummary) => (
@@ -202,76 +198,54 @@ export const Dashboard: React.FC = () => {
                 color: 'info.contrastText' 
               }
             } : {}}>
-              <CardContent>                <Typography variant="h6" gutterBottom>
-                  {month.is_current ? '📅 ' : month.is_future ? '🔮 ' : ''}{getMonthName(month.month)} {month.year}
-                </Typography>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color={month.is_current ? 'primary.contrastText' : month.is_future ? 'info.contrastText' : 'text.secondary'}>
-                    {month.is_future ? 'Previsão de Alunos' : 'Alunos Pagantes'}
+              <CardContent sx={{ py: windowWidth <= 600 ? 1 : 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                  <Typography variant={windowWidth <= 600 ? "subtitle1" : "h6"}>
+                    {month.is_current ? '📅 ' : month.is_future ? '🔮 ' : ''}{getMonthName(month.month)}
                   </Typography>
-                  <Typography variant="h6" color={month.is_current ? 'primary.contrastText' : month.is_future ? 'info.contrastText' : 'success.main'}>
-                    {month.is_future ? month.total_students : `${month.paid_students} / ${month.total_students}`}
+                  <Typography variant="caption">
+                    {month.year}
                   </Typography>
-                </Box>                {!month.is_future && (
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color={month.is_current ? 'primary.contrastText' : 'text.secondary'}>
-                      Alunos Pendentes
-                    </Typography>
-                    <Typography variant="h6" color={month.is_current ? 'error.light' : 'error.main'}>
-                      {month.pending_students}
-                    </Typography>
-                  </Box>
-                )}
-                
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color={month.is_current ? 'primary.contrastText' : month.is_future ? 'info.contrastText' : 'text.secondary'}>
-                    {month.is_future ? 'Valor Previsto' : 'Valor Recebido'}
-                  </Typography>
-                  <Typography variant="h6" color={month.is_current ? 'primary.contrastText' : month.is_future ? 'info.contrastText' : 'success.main'}>
-                    {formatCurrency(month.is_future ? month.total_expected : month.total_received)}
-                  </Typography>
-                </Box>                
-                
-                {!month.is_future && (
-                  <Box>
-                    <Typography variant="body2" color={month.is_current ? 'primary.contrastText' : 'text.secondary'}>
-                      Valor Pendente
-                    </Typography>
-                    <Typography variant="h6" color={month.is_current ? 'error.light' : 'error.main'}>
-                      {formatCurrency(month.total_pending)}
-                    </Typography>
-                  </Box>
-                )}
+                </Box>
 
-                {user?.is_staff && month.physiotherapist_breakdown.length > 0 && (
+                <Grid container spacing={1}>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color={month.is_current ? 'primary.contrastText' : month.is_future ? 'info.contrastText' : 'text.secondary'}>
+                      {month.is_future ? 'Previsão' : 'Recebido'}
+                    </Typography>
+                    <Typography variant={windowWidth <= 600 ? "subtitle1" : "h6"} color={month.is_current ? 'primary.contrastText' : month.is_future ? 'info.contrastText' : 'success.main'}>
+                      {formatCurrency(month.is_future ? month.total_expected : month.total_received)}
+                    </Typography>
+                  </Grid>
+                  
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color={month.is_current ? 'primary.contrastText' : 'text.secondary'}>
+                      Alunos
+                    </Typography>
+                    <Typography variant={windowWidth <= 600 ? "subtitle1" : "h6"} color={month.is_current ? 'primary.contrastText' : month.is_future ? 'info.contrastText' : 'success.main'}>
+                      {month.is_future ? month.total_students : `${month.paid_students}/${month.total_students}`}
+                    </Typography>
+                  </Grid>
+
+                  {!month.is_future && month.total_pending > 0 && (
+                    <Grid item xs={12}>
+                      <Typography variant="body2" color={month.is_current ? 'error.light' : 'error.main'} sx={{ mt: 1 }}>
+                        Pendente: {formatCurrency(month.total_pending)}
+                      </Typography>
+                    </Grid>
+                  )}
+                </Grid>
+
+                {user?.is_staff && month.physiotherapist_breakdown.length > 0 && windowWidth > 600 && (
                   <>
-                    <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+                    <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>
                       Detalhes por Fisioterapeuta
                     </Typography>
                     {month.physiotherapist_breakdown.map((physio) => (
-                      <Box key={physio.id} sx={{ mb: 2, pl: 2, borderLeft: '2px solid', borderColor: 'divider' }}>
-                        <Typography variant="subtitle2">
-                          {physio.name}
+                      <Box key={physio.id} sx={{ mb: 1, pl: 1, borderLeft: '2px solid', borderColor: 'divider' }}>
+                        <Typography variant="caption">
+                          {physio.name}: {physio.paid_students}/{physio.total_students} alunos
                         </Typography>
-                        <Grid container spacing={1} sx={{ mt: 1 }}>
-                          <Grid item xs={6}>
-                            <Typography variant="caption" color="text.secondary">
-                              Pagos: {physio.paid_students}/{physio.total_students}
-                            </Typography>
-                          </Grid>
-                          <Grid item xs={6}>
-                            <Typography variant="caption" color="text.secondary">
-                              Pendentes: {physio.pending_students}
-                            </Typography>
-                          </Grid>
-                          {physio.total_received !== undefined && (
-                            <Grid item xs={12}>
-                              <Typography variant="caption" color="text.secondary">
-                                Recebido: {formatCurrency(physio.total_received)}
-                              </Typography>
-                            </Grid>
-                          )}
-                        </Grid>
                       </Box>
                     ))}
                   </>
