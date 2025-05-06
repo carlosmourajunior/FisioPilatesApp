@@ -24,28 +24,29 @@ interface SidebarProps {
   open: boolean;
   drawerWidth: number;
   onClose: () => void;
+  isMobile: boolean;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ open, drawerWidth, onClose }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ open, drawerWidth, onClose, isMobile }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const handleNavigate = (path: string) => {
     navigate(path);
-    onClose();
+    if (isMobile) {
+      onClose();
+    }
   };
 
-  return (
-    <Drawer
-      variant="temporary"
+  return (    <Drawer
+      variant={isMobile ? "temporary" : "permanent"}
       open={open}
       onClose={onClose}
       sx={{
-        width: drawerWidth,
-        flexShrink: 0,
+        display: { xs: 'block' },
         '& .MuiDrawer-paper': {
-          width: drawerWidth,
           boxSizing: 'border-box',
+          width: drawerWidth,
         },
       }}
     >
