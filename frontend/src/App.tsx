@@ -17,6 +17,7 @@ import ModalityForm from './components/modality/ModalityForm';
 import StudentCalendar from './components/student/StudentCalendar';
 import PaymentDashboard from './components/payment/PaymentDashboard';
 import StudentDetails from './components/student/StudentDetails';
+import StudentImport from './components/student/StudentImport';
 import './App.css';
 
 const theme = createTheme({
@@ -139,12 +140,19 @@ function App() {
                     <ModalityList />
                   </ProtectedRoute>
                 }
-              />
-              <Route
+              />              <Route
                 path="/modalities/new"
                 element={
                   <ProtectedRoute>
                     <ModalityForm />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/students/import"
+                element={
+                  <ProtectedRoute>
+                    <StudentImport />
                   </ProtectedRoute>
                 }
               />

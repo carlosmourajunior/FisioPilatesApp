@@ -113,7 +113,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     } catch (error) {
       console.error('Error fetching payment status:', error);
     }
-  };useEffect(() => {
+  };  useEffect(() => {
     if (open) {
       const initialize = async () => {
         await fetchPaymentStatus();
@@ -123,7 +123,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           ...prev,
           student: studentId,
           modality: modalityId,
-          amount: 0,
           payment_date: new Date(),
           reference_month: new Date(),
         }));

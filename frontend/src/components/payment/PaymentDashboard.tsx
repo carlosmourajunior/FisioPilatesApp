@@ -34,10 +34,10 @@ import { useAuth } from '../../contexts/AuthContext';
 export interface PaymentStatusSummary {
   totalStudents: number;
   paidStudents: number;
-  pendingStudents: number;
-  totalExpectedValue: number;
+  pendingStudents: number;  totalExpectedValue: number;
   totalReceivedValue: number;
   totalPendingValue: number;
+  total_commissions: number;
   paidList: Array<{
     id: number;
     name: string;
@@ -212,8 +212,7 @@ const PaymentDashboard: FC = () => {
                     </Typography>
                   </CardContent>
                 </Card>
-              </Grid>
-              <Grid item xs={12} md={4}>
+              </Grid>              <Grid item xs={12} md={4}>
                 <Card>
                   <CardContent>
                     <Typography variant="h6" gutterBottom>

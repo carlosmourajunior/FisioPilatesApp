@@ -17,7 +17,7 @@ import {
   FormControlLabel,
   Chip,
 } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, AttachMoney as AttachMoneyIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, AttachMoney as AttachMoneyIcon, Visibility as VisibilityIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/axios';
 import { BaseLayout } from '../shared/BaseLayout';
@@ -176,20 +176,78 @@ const StudentList: React.FC = () => {
 
   return (
     <BaseLayout>
-      <Box sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ p: 3 }}>        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h4" component="h1">
             Alunos
           </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            component={Link}
-            to="/students/new"
-          >
-            Novo Aluno
-          </Button>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="outlined"
+              color="primary"              onClick={async () => {
+                try {
+                  const response = await api.get('/api/students/download_template/', {
+                    responseType: 'blob'
+                  });
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', 'template_alunos.xlsx');
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                  window.URL.revokeObjectURL(url);
+                } catch (error) {
+                  setError('Erro ao baixar o template');
+                  console.error('Error downloading template:', error);
+                }
+              }}
+              startIcon={<CloudUploadIcon />}
+            >
+              Baixar Template
+            </Button>
+            <Button
+              variant="outlined"
+              color="primary"
+              component="label"
+              startIcon={<CloudUploadIcon />}
+            >
+              Upload Excel
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    api.post('/api/students/upload/', formData, {
+                      headers: {
+                        'Content-Type': 'multipart/form-data',
+                      },
+                    })
+                    .then(() => {
+                      setSuccessMessage('Alunos importados com sucesso');
+                      fetchStudents();
+                    })
+                    .catch((error) => {
+                      setError('Erro ao importar alunos');
+                      console.error('Error uploading file:', error);
+                    });
+                  }
+                }}
+              />
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              component={Link}
+              to="/students/new"
+            >
+              Novo Aluno
+            </Button>
+          </Box>
         </Box>
 
         <Box sx={{ mb: 2 }}>

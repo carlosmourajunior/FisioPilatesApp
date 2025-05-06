@@ -205,11 +205,11 @@ class PaymentViewSet(viewsets.ModelViewSet):
         if not self.request.user.is_staff:
             students = students.filter(physiotherapist=self.request.user.physiotherapist)
 
-        total_students = students.count()
-
-        # Get monthly summary for last 4 months
+        total_students = students.count()        # Inicializa variáveis
         monthly_summary = []
-        total_overdue = 0  # Inicializa total atrasado
+        total_overdue = 0  # Total atrasado
+        total_commissions = 0  # Total de comissões
+        total_expected_commissions = 0  # Total de comissões esperadas
         
         for month_data in months:
             year = month_data['year']
@@ -310,13 +310,19 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 'total_expected': 0,
                 'total_pending': 0
             }
-        )        # Calcula o total de comissões a receber de todas as fisioterapeutas
-        total_commissions = 0
+        )        # Calcula o total de comissões a receber de todas as fisioterapeutas        
         if self.request.user.is_staff:
+            # Atualiza o total de comissões com base no resumo dos fisioterapeutas            
             total_commissions = sum(
-                physio['commission_to_pay'] 
+                physio.get('commission_to_pay', 0) 
                 for physio in physiotherapist_summary
             )
+            
+            # Calculate expected commissions based on active students
+            active_students = Student.objects.filter(active=True, modality__isnull=False)
+            for student in active_students:
+                if student.commission is not None and student.modality is not None:
+                    total_expected_commissions += float(student.modality.price) * (float(student.commission) / 100)
 
         response_data = {
             'total_students': total_students,
@@ -326,7 +332,8 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 'total_expected': current_month_data['total_expected'],
                 'total_pending': current_month_data['total_pending'],
                 'total_overdue': total_overdue,
-                'total_commissions': total_commissions
+                'total_commissions': total_commissions,
+                'total_expected_commissions': total_expected_commissions
             }
         }
 
