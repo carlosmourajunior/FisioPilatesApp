@@ -1,6 +1,17 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import api from '../utils/axios';
 
+interface Physiotherapist {
+  id: number;
+  crefito: string;
+  phone: string;
+  specialization: string;
+  user: {
+    first_name: string;
+    last_name: string;
+  };
+}
+
 interface User {
   id: number;
   username: string;
@@ -8,6 +19,7 @@ interface User {
   first_name: string;
   last_name: string;
   is_staff: boolean;
+  physiotherapist?: Physiotherapist;
 }
 
 interface AuthContextType {

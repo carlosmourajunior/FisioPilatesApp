@@ -2,9 +2,19 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
+    physiotherapist = serializers.SerializerMethodField()
+
+    def get_physiotherapist(self, user):
+        from physiotherapist.serializers import PhysiotherapistSerializer
+        try:
+            physiotherapist = user.physiotherapist
+            return PhysiotherapistSerializer(physiotherapist).data
+        except:
+            return None
+
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'is_staff')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'is_staff', 'physiotherapist')
         read_only_fields = ('id',)
         error_messages = {
             'username': {

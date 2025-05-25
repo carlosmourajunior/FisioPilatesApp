@@ -22,6 +22,7 @@ export interface MonthSummary {
   total_received: number;
   total_expected: number;
   total_pending: number;
+  total_overdue: number;
   physiotherapist_breakdown: PhysiotherapistSummary[];
 }
 
@@ -32,6 +33,7 @@ interface CurrentMonthSummary {
   total_overdue: number;
   total_commissions: number;
   total_expected_commissions: number;
+  total_paid_commissions: number;
 }
 
 export interface DashboardSummary {

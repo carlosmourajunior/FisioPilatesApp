@@ -17,7 +17,6 @@ class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     permission_classes = [IsAuthenticated]
-    
     def get_queryset(self):
         queryset = Student.objects.all()
         if not self.request.user.is_staff:
@@ -28,9 +27,23 @@ class StudentViewSet(viewsets.ModelViewSet):
             except:
                 queryset = Student.objects.none()
                 
+        # Filter by active status
         active = self.request.query_params.get('active', None)
         if active is not None:
             queryset = queryset.filter(active=active.lower() == 'true')
+            
+        # Filter by weekday
+        weekday = self.request.query_params.get('weekday', None)
+        if weekday is not None:
+            weekday = int(weekday)
+            queryset = queryset.filter(schedules__weekday=weekday).distinct()
+            
+        # Filter by hour
+        hour = self.request.query_params.get('hour', None)
+        if hour is not None:
+            hour = int(hour)
+            queryset = queryset.filter(schedules__hour=hour).distinct()
+            
         return queryset
 
     def perform_create(self, serializer):
@@ -198,7 +211,7 @@ class StudentViewSet(viewsets.ModelViewSet):
         # Volta para a primeira aba
         sheet = workbook.active
         
-        # Define headers
+        # Define headers        
         headers = [
             'Nome',
             'Email',
@@ -207,6 +220,8 @@ class StudentViewSet(viewsets.ModelViewSet):
             'Modalidade (ID)',
             'Data de Registro (DD/MM/AAAA)',
             'Comissão (%)',
+            'Tipo de Pagamento (Pré/Pós)',
+            'Dia do Pagamento (1-31)',
             'Dias da Semana (SEG,TER,QUA,QUI,SEX,SAB)',
             'Horário (HH:MM)',
             'Ativo (Sim/Não)',
@@ -299,26 +314,49 @@ class StudentViewSet(viewsets.ModelViewSet):
                     return Response(
                         {'error': f'Modalidade com ID {modality_id} não encontrada para o aluno {row[0]}'},
                         status=status.HTTP_400_BAD_REQUEST
-                    )                # Converte os dias da semana em uma lista
+                    )                # Processa o tipo de pagamento
+                payment_type = 'PRE'
+                if row[7]:
+                    payment_type = 'PRE' if row[7].lower().startswith('pré') else 'POS'
+
+                # Processa o dia do pagamento
+                payment_day = None
+                if row[8] and str(row[8]).strip():  # Dia do Pagamento
+                    try:
+                        payment_day = int(str(row[8]).strip())
+                        if payment_day < 1 or payment_day > 31:
+                            return Response(
+                                {'error': f'Dia do pagamento inválido para o aluno {row[0]}. Deve ser entre 1 e 31'},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                    except (ValueError, TypeError):
+                        return Response(
+                            {'error': f'Dia do pagamento inválido para o aluno {row[0]}. Deve ser um número entre 1 e 31'},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                # Converte os dias da semana em uma lista
                 weekdays_map = {
                     'SEG': 0, 'TER': 1, 'QUA': 2, 
                     'QUI': 3, 'SEX': 4, 'SAB': 5, 'DOM': 6
                 }
                 weekday_list = []
-                if row[7]:  # Dias da semana
-                    weekday_list = [weekdays_map[day.strip().upper()] for day in row[7].split(',')]                # Converte o horário para inteiro (hora)
+                if row[9]:  # Dias da semana
+                    weekday_list = [weekdays_map[day.strip().upper()] for day in row[9].split(',')]                
+                
+                # Converte o horário para inteiro (hora)
                 hour = None
-                if row[8]:  # Horário
+                if row[10]:  # Horário
                     try:
-                        if isinstance(row[8], datetime):
+                        if isinstance(row[10], datetime):
                             # Se for datetime, pega a hora
-                            hour = row[8].hour
-                        elif isinstance(row[8], str):
+                            hour = row[10].hour
+                        elif isinstance(row[10], str):
                             # Se for string, extrai a hora
-                            hour = int(row[8].split(':')[0])
+                            hour = int(row[10].split(':')[0])
                         else:
                             # Para outros tipos (como time)
-                            hour = row[8].hour if hasattr(row[8], 'hour') else int(str(row[8]).split(':')[0])
+                            hour = row[10].hour if hasattr(row[10], 'hour') else int(str(row[10]).split(':')[0])
                     except (ValueError, IndexError, AttributeError):
                         return Response(
                             {'error': f'Formato de horário inválido para o aluno {row[0]}. Use o formato HH:MM'},
@@ -329,7 +367,7 @@ class StudentViewSet(viewsets.ModelViewSet):
                 else:
                     physiotherapist_id = None
 
-                # Cria o aluno
+                # Cria o aluno                
                 student_data = {
                     'name': row[0],
                     'email': row[1],
@@ -338,10 +376,12 @@ class StudentViewSet(viewsets.ModelViewSet):
                     'modality': modality_id,
                     'registration_date': registration_date,
                     'commission': float(row[6]) if row[6] else 50.0,
-                    'active': row[9].lower() == 'sim',
-                    'notes': row[10],
+                    'payment_type': payment_type,
+                    'payment_day': payment_day,
+                    'active': row[11].lower() == 'sim',
+                    'notes': row[12],
                     'physiotherapist': physiotherapist_id
-                }                
+                }
                 serializer = self.get_serializer(data=student_data)
                 if serializer.is_valid():
                     # Salva o aluno e pega a instância criada

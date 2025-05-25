@@ -170,11 +170,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         <DialogContent>
           {paymentStatus && (
             <Box sx={{ mb: 2 }}>
-              {paymentStatus.payment_type === 'MONTHLY' ? (
-                <Alert severity={paymentStatus.paid_current_month ? "info" : "warning"}>
+              {paymentStatus.payment_type === 'MONTHLY' ? (                <Alert severity={paymentStatus.paid_current_month ? "info" : "warning"}>
                   {paymentStatus.paid_current_month 
-                    ? 'Pagamento do mês atual já realizado'
-                    : 'Pagamento do mês atual pendente'}
+                    ? 'Pagamento do mês já realizado'
+                    : 'Pagamento do mês pendente'}
                 </Alert>
               ) : (
                 <Alert severity="info">

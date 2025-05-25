@@ -34,3 +34,34 @@ export interface PaymentFormData {
   payment_date: Date;
   reference_month?: Date | null;
 }
+
+export interface ClinicCommissionPayment {
+  id?: number;
+  physiotherapist: number;
+  physiotherapist_details?: {
+    user: {
+      first_name: string;
+      last_name: string;
+    };
+  };
+  transfer_date: string;
+  total_commission_due: number;
+  amount_paid: number;
+  description: string;
+  status: 'awaiting_approval' | 'approved';
+  created_at?: string;
+}
+
+export interface CommissionsDue {
+  total_commission_due: number;
+  total_paid: number;
+  total_commission: number;
+  month: string;
+  details: {
+    student_name: string;
+    payment_date: string;
+    payment_amount: number;
+    commission_rate: number;
+    commission_amount: number;
+  }[];
+}

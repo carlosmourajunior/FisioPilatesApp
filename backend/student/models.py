@@ -11,23 +11,27 @@ class Student(models.Model):
     date_of_birth = models.DateField(blank=True, null=True)
     registration_date = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
-    notes = models.TextField(blank=True, null=True)    
+    notes = models.TextField(blank=True, null=True)
     
     PAYMENT_TYPE_CHOICES = [
         ('PRE', 'Pré-pago'),
         ('POS', 'Pós-pago'),
-    ]
+    ]    
     payment_type = models.CharField(
         max_length=3,
         choices=PAYMENT_TYPE_CHOICES,
         default='PRE',
         verbose_name='Tipo de Pagamento'
     )
-    payment_date = models.DateField(
+    payment_day = models.PositiveIntegerField(
         blank=True, 
         null=True,
-        verbose_name='Data de Referência do Pagamento',
-        help_text='Data de referência para pagamento mensal'
+        verbose_name='Dia do Pagamento',
+        help_text='Dia do mês para pagamento (1-31)',
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(31)
+        ]
     )
     session_quantity = models.PositiveIntegerField(
         blank=True,
@@ -65,6 +69,11 @@ class Student(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        ordering = ['name']    
+        def __str__(self):
+            return self.name
 
     class Meta:
         ordering = ['name']

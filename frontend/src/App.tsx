@@ -2,6 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider, createTheme } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { ptBR } from 'date-fns/locale';
+import { SnackbarProvider } from 'notistack';
 import { Login } from './components/auth/Login';
 import { Register } from './components/auth/Register';
 import { Dashboard } from './components/Dashboard';
@@ -16,6 +20,7 @@ import ModalityList from './components/modality/ModalityList';
 import ModalityForm from './components/modality/ModalityForm';
 import StudentCalendar from './components/student/StudentCalendar';
 import PaymentDashboard from './components/payment/PaymentDashboard';
+import CommissionList from './components/commission/CommissionList';
 import StudentDetails from './components/student/StudentDetails';
 import StudentImport from './components/student/StudentImport';
 import './App.css';
@@ -54,136 +59,143 @@ const theme = createTheme({
 });
 
 function App() {
-  return (
-    <ThemeProvider theme={theme}>
-      <AuthProvider>
-        <Router>
-          <div className="App">
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/account"
-                element={
-                  <ProtectedRoute>
-                    <AccountDetails />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/physiotherapists"
-                element={
-                  <AdminRoute>
-                    <PhysiotherapistList />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/physiotherapists/new"
-                element={
-                  <AdminRoute>
-                    <PhysiotherapistForm />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/physiotherapists/edit/:id"
-                element={
-                  <AdminRoute>
-                    <PhysiotherapistForm />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/students"
-                element={
-                  <ProtectedRoute>
-                    <StudentList />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/students/new"
-                element={
-                  <ProtectedRoute>
-                    <StudentForm />
-                  </ProtectedRoute>
-                }
-              />              <Route
-                path="/students/edit/:id"
-                element={
-                  <ProtectedRoute>
-                    <StudentForm />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/students/details/:id"
-                element={
-                  <ProtectedRoute>
-                    <StudentDetails />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/modalities"
-                element={
-                  <ProtectedRoute>
-                    <ModalityList />
-                  </ProtectedRoute>
-                }
-              />              <Route
-                path="/modalities/new"
-                element={
-                  <ProtectedRoute>
-                    <ModalityForm />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/students/import"
-                element={
-                  <ProtectedRoute>
-                    <StudentImport />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/modalities/edit/:id"
-                element={
-                  <ProtectedRoute>
-                    <ModalityForm />
-                  </ProtectedRoute>
-                }
-              />              <Route
-                path="/calendar"
-                element={
-                  <ProtectedRoute>
-                    <StudentCalendar />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/payments"
-                element={
-                  <ProtectedRoute>
-                    <PaymentDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </div>
-        </Router>
-      </AuthProvider>
+  return (    <ThemeProvider theme={theme}>
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+        <SnackbarProvider maxSnack={3}>
+          <AuthProvider>
+            <Router>
+              <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/account"
+                    element={
+                      <ProtectedRoute>
+                        <AccountDetails />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/physiotherapists"
+                    element={
+                      <AdminRoute>
+                        <PhysiotherapistList />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/physiotherapists/new"
+                    element={
+                      <AdminRoute>
+                        <PhysiotherapistForm />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/physiotherapists/edit/:id"
+                    element={
+                      <AdminRoute>
+                        <PhysiotherapistForm />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/students"
+                    element={
+                      <ProtectedRoute>
+                        <StudentList />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/students/new"
+                    element={
+                      <ProtectedRoute>
+                        <StudentForm />
+                      </ProtectedRoute>
+                    }
+                  />              <Route
+                    path="/students/edit/:id"
+                    element={
+                      <ProtectedRoute>
+                        <StudentForm />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/students/details/:id"
+                    element={
+                      <ProtectedRoute>
+                        <StudentDetails />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/modalities"
+                    element={
+                      <ProtectedRoute>
+                        <ModalityList />
+                      </ProtectedRoute>
+                    }
+                  />              <Route
+                    path="/modalities/new"
+                    element={
+                      <ProtectedRoute>
+                        <ModalityForm />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/students/import"
+                    element={
+                      <ProtectedRoute>
+                        <StudentImport />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/modalities/edit/:id"
+                    element={
+                      <ProtectedRoute>
+                        <ModalityForm />
+                      </ProtectedRoute>
+                    }
+                  />              <Route
+                    path="/calendar"
+                    element={
+                      <ProtectedRoute>
+                        <StudentCalendar />
+                      </ProtectedRoute>
+                    }
+                  />              <Route
+                    path="/payments"
+                    element={
+                      <ProtectedRoute>
+                        <PaymentDashboard />
+                      </ProtectedRoute>
+                    }
+                  />                  <Route
+                    path="/payments/commission"
+                    element={
+                      <ProtectedRoute>
+                        <CommissionList />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                </Routes>
+              </Router>
+            </AuthProvider>
+        </SnackbarProvider>
+      </LocalizationProvider>
     </ThemeProvider>
   );
 }

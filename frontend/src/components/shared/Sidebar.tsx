@@ -93,13 +93,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, drawerWidth, onClose, is
               </ListItemIcon>
               <ListItemText primary="Calendário" />
             </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
+          </ListItem>          <ListItem disablePadding>
             <ListItemButton onClick={() => handleNavigate('/payments')}>
               <ListItemIcon>
                 <PaymentsIcon />
               </ListItemIcon>
-              <ListItemText primary="Pagamentos" />
+              <ListItemText primary="Pagamentos Alunos" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => handleNavigate('/payments/commission')}>
+              <ListItemIcon>
+                <PaymentsIcon />
+              </ListItemIcon>
+              <ListItemText primary="Comissões Clínica" />
             </ListItemButton>
           </ListItem>
         </List>

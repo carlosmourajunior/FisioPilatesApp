@@ -19,6 +19,10 @@ import {
   Card,
   CardContent,
   TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, AttachMoney as AttachMoneyIcon, Visibility as VisibilityIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
@@ -29,7 +33,7 @@ import { ptBR } from 'date-fns/locale';
 import { AxiosError } from 'axios';
 import PaymentForm from '../payment/PaymentForm';
 import { PaymentService } from '../../services/PaymentService';
-import { PaymentStatus } from '../../types/payment';
+
 
 interface Modality {
   id: number;
@@ -52,7 +56,35 @@ interface Student {
   payment_date: string | null;
   session_quantity: number | null;
   commission: number;
+  payment_status?: {
+    payment_type: 'MONTHLY' | 'SESSION';
+    paid_current_month?: boolean;
+    modality_price?: number;
+    session_price?: number; 
+    session_quantity?: number;
+    total_value?: number;
+    total_paid?: number;
+    remaining_value?: number;
+    is_overdue?: boolean;
+    payment_day?: number | null;
+  };
+  schedules?: { weekday: number; hour: number }[];
 }
+
+const weekdays = [
+  { value: 0, label: 'Segunda-feira' },
+  { value: 1, label: 'Terça-feira' },
+  { value: 2, label: 'Quarta-feira' },
+  { value: 3, label: 'Quinta-feira' },
+  { value: 4, label: 'Sexta-feira' },
+  { value: 5, label: 'Sábado' },
+  { value: 6, label: 'Domingo' }
+];
+
+const hours = Array.from({ length: 16 }, (_, i) => i + 6).map(hour => ({
+  value: hour,
+  label: `${hour.toString().padStart(2, '0')}:00`
+}));
 
 const StudentList: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
@@ -62,33 +94,36 @@ const StudentList: React.FC = () => {
   const [showOnlyActive, setShowOnlyActive] = useState(true);
   const [showOnlyPending, setShowOnlyPending] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [weekdayFilter, setWeekdayFilter] = useState<number | ''>('');
+  const [hourFilter, setHourFilter] = useState<number | ''>('');
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [paymentStatuses, setPaymentStatuses] = useState<Record<number, PaymentStatus>>({});
+
   const isMobile = window.innerWidth <= 600;
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-
   const fetchStudents = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await api.get(`/api/students/?active=${showOnlyActive}`);
-      setStudents(response.data);
+      let url = '/api/students/';
+      const params: any = {};
       
-      // Fetch payment status for each student
-      const statuses: Record<number, PaymentStatus> = {};
-      await Promise.all(
-        response.data.map(async (student: Student) => {
-          if (student.modality) {
-            try {
-              const status = await PaymentService.getPaymentStatus(student.id);
-              statuses[student.id] = status;
-            } catch (error) {
-              console.error('Error fetching payment status for student:', student.id, error);
-            }
-          }
-        })
-      );
-      setPaymentStatuses(statuses);
+      // Add active filter
+      if (showOnlyActive !== undefined) {
+        params.active = showOnlyActive;
+      }
+      
+      // Add weekday filter
+      if (weekdayFilter !== '') {
+        params.weekday = weekdayFilter;
+      }
+      
+      // Add hour filter
+      if (hourFilter !== '') {
+        params.hour = hourFilter;
+      }
+      
+      const response = await api.get(url, { params });
+      setStudents(response.data);
     } catch (error) {
       setError('Erro ao carregar alunos');
       const axiosError = error as AxiosError;
@@ -135,10 +170,9 @@ const StudentList: React.FC = () => {
     setSuccessMessage('Pagamento registrado com sucesso');
     fetchStudents();
   };
-
   useEffect(() => {
     fetchStudents();
-  }, [showOnlyActive]);
+  }, [showOnlyActive, weekdayFilter, hourFilter]);
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'dd/MM/yyyy', { locale: ptBR });
@@ -150,26 +184,41 @@ const StudentList: React.FC = () => {
       currency: 'BRL' 
     }).format(value);
   };
-
   const renderPaymentStatus = (student: Student) => {
-    const status = paymentStatuses[student.id];
-    if (!status || !student.modality_details) return null;
+    if (!student.payment_status || !student.modality_details) return null;
 
-    if (status.payment_type === 'MONTHLY') {
-      return (
-        <Chip
-          label={status.paid_current_month ? 'Mês atual pago' : 'Pagamento pendente'}
-          color={status.paid_current_month ? 'success' : 'warning'}
-          size="small"
-        />
-      );
+    if (student.payment_status.payment_type === 'MONTHLY') {
+      if (student.payment_status.paid_current_month) {
+        return (
+          <Box>
+            <Chip
+              label="Mês pago"
+              color="success"
+              size="small"
+            />
+          </Box>
+        );
+      } else {
+        return (
+          <Box>
+            <Chip
+              label={student.payment_status.is_overdue ? 'Pagamento atrasado' : 'Pagamento pendente'} 
+              color={student.payment_status.is_overdue ? 'error' : 'warning'} 
+              size="small"
+            />
+            <Typography variant="caption" display="block" color="text.secondary">
+              {student.payment_status.payment_day ? `Vence dia ${student.payment_status.payment_day}` : 'Data não definida'}
+            </Typography>
+          </Box>
+        );
+      }
     } else {
-      if (!status.session_quantity) return null;
-      const percentPaid = ((status.total_paid || 0) / (status.total_value || 1)) * 100;
+      if (!student.payment_status.session_quantity) return null;
+      const percentPaid = ((student.payment_status.total_paid || 0) / (student.payment_status.total_value || 1)) * 100;
       return (
         <Box>
           <Typography variant="body2">
-            {formatCurrency(status.total_paid || 0)} / {formatCurrency(status.total_value || 0)}
+            {formatCurrency(student.payment_status.total_paid || 0)} / {formatCurrency(student.payment_status.total_value || 0)}
           </Typography>
           <Chip
             label={`${Math.round(percentPaid)}% pago`}
@@ -188,15 +237,32 @@ const StudentList: React.FC = () => {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const filteredStudents = students.filter(student => {
+  }, []);  const filteredStudents = students.filter(student => {
+    // Filtro por nome
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Filtro de pagamentos pendentes  
     const matchesPending = !showOnlyPending || (
       student.modality_details && 
-      (!paymentStatuses[student.id]?.paid_current_month)
+      student.payment_status &&
+      (!student.payment_status.paid_current_month)
     );
-    return matchesSearch && matchesPending;
+
+    // Filtro por horário e dia da semana
+    let matchesSchedule = true;
+    if (weekdayFilter !== '' || hourFilter !== '') {
+      if (!student.schedules || student.schedules.length === 0) {
+        matchesSchedule = false;
+      } else {
+        matchesSchedule = student.schedules.some(schedule => {
+          const matchesWeekday = weekdayFilter === '' || schedule.weekday === Number(weekdayFilter);
+          const matchesHour = hourFilter === '' || schedule.hour === Number(hourFilter);
+          return matchesWeekday && matchesHour;
+        });
+      }
+    }
+
+    return matchesSearch && matchesPending && matchesSchedule;
   });
 
   return (
@@ -286,6 +352,40 @@ const StudentList: React.FC = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             sx={{ flex: 1 }}
           />
+          <FormControl size={isMobile ? "small" : "medium"} sx={{ minWidth: 200 }}>
+            <InputLabel>Dia da Semana</InputLabel>
+            <Select
+              value={weekdayFilter}
+              label="Dia da Semana"
+              onChange={(e) => setWeekdayFilter(e.target.value as number | '')}
+            >
+              <MenuItem value="">
+                <em>Todos</em>
+              </MenuItem>
+              {weekdays.map((weekday) => (
+                <MenuItem key={weekday.value} value={weekday.value}>
+                  {weekday.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl size={isMobile ? "small" : "medium"} sx={{ minWidth: 150 }}>
+            <InputLabel>Horário</InputLabel>
+            <Select
+              value={hourFilter}
+              label="Horário"
+              onChange={(e) => setHourFilter(e.target.value as number | '')}
+            >
+              <MenuItem value="">
+                <em>Todos</em>
+              </MenuItem>
+              {hours.map((hour) => (
+                <MenuItem key={hour.value} value={hour.value}>
+                  {hour.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 2 }}>
             <FormControlLabel
               control={

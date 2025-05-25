@@ -56,7 +56,7 @@ interface StudentFormData {
   physiotherapist?: number | null;
   modality: number;
   schedules: Schedule[];
-  payment_date: Date | null;
+  payment_day: number | null;
   session_quantity: number | null;
   commission: number;
 }
@@ -80,7 +80,7 @@ const StudentForm: React.FC = () => {
     physiotherapist: null,
     modality: 0,
     schedules: [],
-    payment_date: null,
+    payment_day: null,
     session_quantity: null,
     commission: 50
   });
@@ -222,7 +222,7 @@ const StudentForm: React.FC = () => {
       modality: modalityId,
       // Clear type-specific fields
       schedules: selected?.payment_type === 'MONTHLY' ? prev.schedules : [],
-      payment_date: selected?.payment_type === 'MONTHLY' ? prev.payment_date : null,
+      payment_day: selected?.payment_type === 'MONTHLY' ? prev.payment_day : null,
       session_quantity: selected?.payment_type === 'SESSION' ? prev.session_quantity : null
     }));
     
@@ -324,10 +324,27 @@ const StudentForm: React.FC = () => {
               </FormControl>
 
               {selectedModality?.payment_type === 'MONTHLY' && (
-                <StudentScheduling
-                  schedules={formData.schedules}
-                  onChange={handleSchedulesChange}
-                />
+                <>
+                  <TextField
+                    fullWidth
+                    label="Dia do Pagamento"
+                    name="payment_day"
+                    type="number"
+                    value={formData.payment_day || ''}
+                    onChange={handleTextChange}
+                    inputProps={{
+                      min: 1,
+                      max: 31,
+                      step: 1
+                    }}
+                    helperText="Dia do mês para pagamento (1-31)"
+                    disabled={loading}
+                  />
+                  <StudentScheduling
+                    schedules={formData.schedules}
+                    onChange={handleSchedulesChange}
+                  />
+                </>
               )}
 
               {user?.is_staff && (

@@ -131,15 +131,17 @@ export const Dashboard: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </GridComponent>        <GridComponent item xs={12} sm={6} md={4}>
+        </GridComponent>        
+        <GridComponent item xs={12} sm={6} md={4}>
           <Card>
             <CardContent sx={{ py: windowWidth <= 600 ? 1 : 2 }}>
-              <Box textAlign="center">                <MonetizationOnIcon sx={{ fontSize: windowWidth <= 600 ? 32 : 40, color: 'purple', mb: 1 }} />
-                <Tooltip title="Valor a ser repassado para a clínica referente aos pagamentos já recebidos no mês atual">
+              <Box textAlign="center">                
+                <MonetizationOnIcon sx={{ fontSize: windowWidth <= 600 ? 32 : 40, color: 'success.main', mb: 1 }} />
+                <Tooltip title="Total já pago para a clínica no mês atual em comissões">
                   <Box>
-                    <Typography variant={windowWidth <= 600 ? "subtitle1" : "h6"}>A Pagar para Clínica</Typography>
-                    <Typography variant={windowWidth <= 600 ? "h6" : "h4"} color="purple">
-                      {formatCurrency(dashboardData?.current_month_summary?.total_commissions || 0)}
+                    <Typography variant={windowWidth <= 600 ? "subtitle1" : "h6"}>Total Pago para Clínica</Typography>
+                    <Typography variant={windowWidth <= 600 ? "h6" : "h4"} color="success.main">
+                      {formatCurrency(dashboardData?.current_month_summary?.total_paid_commissions || 0)}
                     </Typography>
                   </Box>
                 </Tooltip>
@@ -151,7 +153,26 @@ export const Dashboard: React.FC = () => {
         <GridComponent item xs={12} sm={6} md={4}>
           <Card>
             <CardContent sx={{ py: windowWidth <= 600 ? 1 : 2 }}>
-              <Box textAlign="center">                <MonetizationOnIcon sx={{ fontSize: windowWidth <= 600 ? 32 : 40, color: 'info.main', mb: 1 }} />
+              <Box textAlign="center">                
+                <MonetizationOnIcon sx={{ fontSize: windowWidth <= 600 ? 32 : 40, color: 'purple', mb: 1 }} />
+                <Tooltip title="Valor que ainda deve ser repassado para a clínica dos pagamentos já recebidos no mês atual">
+                  <Box>
+                    <Typography variant={windowWidth <= 600 ? "subtitle1" : "h6"}>A Pagar para Clínica</Typography>
+                    <Typography variant={windowWidth <= 600 ? "h6" : "h4"} color="purple">
+                      {formatCurrency((dashboardData?.current_month_summary?.total_commissions || 0) - (dashboardData?.current_month_summary?.total_paid_commissions || 0))}
+                    </Typography>
+                  </Box>
+                </Tooltip>
+              </Box>
+            </CardContent>
+          </Card>
+        </GridComponent>
+
+        <GridComponent item xs={12} sm={6} md={4}>
+          <Card>
+            <CardContent sx={{ py: windowWidth <= 600 ? 1 : 2 }}>
+              <Box textAlign="center">                
+                <MonetizationOnIcon sx={{ fontSize: windowWidth <= 600 ? 32 : 40, color: 'info.main', mb: 1 }} />
                 <Tooltip title="Valor total a ser repassado para a clínica quando todos os pagamentos pendentes forem recebidos">
                   <Box>
                     <Typography variant={windowWidth <= 600 ? "subtitle1" : "h6"}>Previsão para Clínica</Typography>
@@ -260,28 +281,35 @@ export const Dashboard: React.FC = () => {
                   </Grid>
 
                   {!month.is_future && month.total_pending > 0 && (
-                    <Grid item xs={12}>
-                      <Typography variant="body2" color={month.is_current ? 'error.light' : 'error.main'} sx={{ mt: 1 }}>
-                        Pendente: {formatCurrency(month.total_pending)}
-                      </Typography>
-                    </Grid>
-                  )}
-                </Grid>
-
-                {user?.is_staff && month.physiotherapist_breakdown.length > 0 && windowWidth > 600 && (
-                  <>
-                    <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>
-                      Detalhes por Fisioterapeuta
-                    </Typography>
-                    {month.physiotherapist_breakdown.map((physio) => (
-                      <Box key={physio.id} sx={{ mb: 1, pl: 1, borderLeft: '2px solid', borderColor: 'divider' }}>
-                        <Typography variant="caption">
-                          {physio.name}: {physio.paid_students}/{physio.total_students} alunos
+                    <>
+                      <Grid item xs={12}>
+                        <Typography variant="body2" color={month.is_current ? 'warning.light' : 'warning.main'} sx={{ mt: 1 }}>
+                          Pendente: {formatCurrency(month.total_pending)}
                         </Typography>
-                      </Box>
-                    ))}
-                  </>
-                )}
+                      </Grid>
+                      {month.total_overdue > 0 && (
+                        <Grid item xs={12}>
+                          <Typography variant="body2" color={month.is_current ? 'error.light' : 'error.main'}>
+                            Atrasado: {formatCurrency(month.total_overdue)}
+                          </Typography>
+                        </Grid>
+                      )}
+                    </>
+                  )}                  {user?.is_staff && month.physiotherapist_breakdown.length > 0 && windowWidth > 600 && (
+                    <>
+                      <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>
+                        Detalhes por Fisioterapeuta
+                      </Typography>
+                      {month.physiotherapist_breakdown.map((physio) => (
+                        <Box key={physio.id} sx={{ mb: 1, pl: 1, borderLeft: '2px solid', borderColor: 'divider' }}>
+                          <Typography variant="caption">
+                            {physio.name}: {physio.paid_students}/{physio.total_students} alunos
+                          </Typography>
+                        </Box>
+                      ))}
+                    </>
+                  )}
+                  </Grid>
               </CardContent>
             </Card>
           </GridComponent>

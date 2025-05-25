@@ -18,7 +18,7 @@ export interface Student {
   modality: number;
   modality_details?: Modality;
   physiotherapist: number | null;
-  payment_date: string | null;
+  payment_day: number | null;
   session_quantity: number | null;
   commission: number;
 }
