@@ -138,6 +138,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:80",
+    "http://127.0.0.1:80",
+    "http://localhost",
+    "http://127.0.0.1",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -161,11 +165,20 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'cache-control',
+    'pragma',
+    'expires',
 ]
 
 CORS_EXPOSE_HEADERS = [
     'content-type',
     'x-csrftoken',
+]
+
+# PWA Support - Service Worker
+CORS_ALLOW_HEADERS += [
+    'service-worker',
+    'sw-registration-scope',
 ]
 
 # Security settings
@@ -178,7 +191,20 @@ CSRF_COOKIE_SECURE = False  # Set to True in production
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:80",
+    "http://127.0.0.1:80",
+    "http://localhost",
+    "http://127.0.0.1",
 ]
+
+# PWA Cache Headers
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# Static files for PWA
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
