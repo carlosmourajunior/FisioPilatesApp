@@ -23,6 +23,7 @@ import PaymentDashboard from './components/payment/PaymentDashboard';
 import CommissionList from './components/commission/CommissionList';
 import StudentDetails from './components/student/StudentDetails';
 import StudentImport from './components/student/StudentImport';
+import { PWANotifications } from './components/PWANotifications';
 import './App.css';
 
 const theme = createTheme({
@@ -194,6 +195,7 @@ function App() {
                 </Routes>
               </Router>
             </AuthProvider>
+            <PWANotifications />
         </SnackbarProvider>
       </LocalizationProvider>
     </ThemeProvider>
