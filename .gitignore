@@ -24,5 +24,22 @@ backend/*.pyc
 backend/.env
 backend/db.sqlite3
 backend/*.sqlite3
+
+# Environment files - Protect sensitive data
+.env
+.env.local
+.env.production
+.env.staging
+backend/.env.local
+backend/.env.production
+backend/.env.staging
+frontend/.env
+frontend/.env.production
+frontend/.env.staging
+
+# Keep only example files
+!.env.example
+
+# Data files
 arquivos/Dados.xlsx
 arquivos/Pacieentes Taisa.xlsx
