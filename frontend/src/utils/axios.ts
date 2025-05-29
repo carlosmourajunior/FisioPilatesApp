@@ -5,7 +5,8 @@ interface ApiErrorResponse {
   detail?: string;
 }
 
-const API_BASE_URL = 'http://localhost:8000';
+// Get API URL from environment variable or default to localhost
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 // Custom error type that includes response
 class ApiError extends Error {

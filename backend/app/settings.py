@@ -11,20 +11,32 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Environment variables with defaults
+HOST_DOMAIN = os.getenv('HOST_DOMAIN', 'localhost')
+HOST_IP = os.getenv('HOST_IP', '127.0.0.1')
+FRONTEND_PORT = os.getenv('FRONTEND_PORT', '3000')
+BACKEND_PORT = os.getenv('BACKEND_PORT', '8000')
+NGINX_PORT = os.getenv('NGINX_PORT', '80')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-j*#ciu0i$6cooql@go4_xcx=3bupez6jnpntxtsh94in^2+f=_'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-j*#ciu0i$6cooql@go4_xcx=3bupez6jnpntxtsh94in^2+f=_')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes', 'on')
 
+# Build allowed hosts dynamically
 ALLOWED_HOSTS = ['*']  # For development only
 
 
@@ -38,8 +50,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'corsheaders',    'authentication',
-    'physiotherapist',    'student',
+    'corsheaders',    
+    'authentication',
+    'physiotherapist',    
+    'student',
     'modality',
     'schedule',
     'payment',
@@ -78,8 +92,6 @@ WSGI_APPLICATION = 'app.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-import os
 
 DATABASES = {
     'default': {
@@ -134,15 +146,26 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS settings
+# CORS settings - Dynamic based on environment
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:80",
-    "http://127.0.0.1:80",
-    "http://localhost",
-    "http://127.0.0.1",
+    f"http://{HOST_DOMAIN}:{FRONTEND_PORT}",
+    f"http://{HOST_IP}:{FRONTEND_PORT}",
+    f"http://{HOST_DOMAIN}:{NGINX_PORT}",
+    f"http://{HOST_IP}:{NGINX_PORT}",
+    f"http://{HOST_DOMAIN}",
+    f"http://{HOST_IP}",
 ]
+
+# If in production and HTTPS is enabled, add HTTPS origins
+if not DEBUG:
+    CORS_ALLOWED_ORIGINS.extend([
+        f"https://{HOST_DOMAIN}:{FRONTEND_PORT}",
+        f"https://{HOST_IP}:{FRONTEND_PORT}",
+        f"https://{HOST_DOMAIN}:{NGINX_PORT}",
+        f"https://{HOST_IP}:{NGINX_PORT}",
+        f"https://{HOST_DOMAIN}",
+        f"https://{HOST_IP}",
+    ])
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -181,21 +204,32 @@ CORS_ALLOW_HEADERS += [
     'sw-registration-scope',
 ]
 
-# Security settings
+# Security settings - Dynamic based on environment
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_NAME = 'csrftoken'
-CSRF_COOKIE_SECURE = False  # Set to True in production
+CSRF_COOKIE_SECURE = not DEBUG  # True in production
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:80",
-    "http://127.0.0.1:80",
-    "http://localhost",
-    "http://127.0.0.1",
+    f"http://{HOST_DOMAIN}:{FRONTEND_PORT}",
+    f"http://{HOST_IP}:{FRONTEND_PORT}",
+    f"http://{HOST_DOMAIN}:{NGINX_PORT}",
+    f"http://{HOST_IP}:{NGINX_PORT}",
+    f"http://{HOST_DOMAIN}",
+    f"http://{HOST_IP}",
 ]
+
+# If in production and HTTPS is enabled, add HTTPS origins
+if not DEBUG:
+    CSRF_TRUSTED_ORIGINS.extend([
+        f"https://{HOST_DOMAIN}:{FRONTEND_PORT}",
+        f"https://{HOST_IP}:{FRONTEND_PORT}",
+        f"https://{HOST_DOMAIN}:{NGINX_PORT}",
+        f"https://{HOST_IP}:{NGINX_PORT}",
+        f"https://{HOST_DOMAIN}",
+        f"https://{HOST_IP}",
+    ])
 
 # PWA Cache Headers
 SECURE_BROWSER_XSS_FILTER = True
@@ -210,7 +244,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False  # Set to True in production
+SESSION_COOKIE_SECURE = not DEBUG  # True in production
 SESSION_COOKIE_DOMAIN = None  # This will use the current domain
 
 # Rest Framework settings

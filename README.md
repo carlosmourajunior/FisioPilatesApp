@@ -1,4 +1,4 @@
-# Generic App
+# FisioPilates - Sistema de Gestão
 
 Um aplicativo web moderno construído com React (TypeScript) no frontend e Django no backend, utilizando Docker para containerização.
 
@@ -12,12 +12,61 @@ O projeto está dividido em duas partes principais:
 - Sistema de roteamento com React Router
 - TypeScript para tipagem estática
 - Autenticação de usuários integrada
+- PWA (Progressive Web App) com Service Worker
 
 ### Backend (Django)
 - API REST com Django REST Framework
 - Sistema de autenticação robusto
-- Banco de dados SQLite (pode ser facilmente alterado para PostgreSQL)
+- Banco de dados PostgreSQL
 - Sistema de migração de banco de dados
+- Configuração flexível via variáveis de ambiente
+
+## 🔧 Configuração de Ambiente
+
+**IMPORTANTE**: Este sistema usa variáveis de ambiente para configuração, permitindo flexibilidade entre desenvolvimento e produção.
+
+### Configuração Rápida
+
+#### Windows (PowerShell)
+```powershell
+# Para desenvolvimento
+.\setup-env.ps1 desenvolvimento
+
+# Para produção
+.\setup-env.ps1 producao
+```
+
+#### Linux/Mac
+```bash
+# Para desenvolvimento
+./setup-env.sh desenvolvimento
+
+# Para produção
+./setup-env.sh producao
+```
+
+### Configuração Manual
+
+1. Copie o arquivo de exemplo:
+```bash
+cp .env.example .env
+```
+
+2. Edite o arquivo `.env` com suas configurações:
+```env
+# Configurações do servidor
+HOST_DOMAIN=localhost          # ou seu domínio em produção
+HOST_IP=127.0.0.1             # ou seu IP em produção
+
+# URLs da API
+REACT_APP_API_URL=http://localhost:8000  # ou sua URL de produção
+
+# Segurança (MUDE EM PRODUÇÃO!)
+SECRET_KEY=sua-chave-secreta
+DEBUG=True                     # False em produção
+```
+
+📖 **Para configuração detalhada, consulte**: [CONFIGURACAO-ENV.md](CONFIGURACAO-ENV.md)
 
 ## 📋 Pré-requisitos
 
@@ -38,7 +87,18 @@ git clone https://github.com/carlosmourajunior/generic_app.git
 cd generic_app
 ```
 
-2. Inicie os containers com Docker Compose:
+2. Configure o ambiente (escolha uma opção):
+```bash
+# Desenvolvimento
+.\setup-env.ps1 desenvolvimento  # Windows
+./setup-env.sh desenvolvimento   # Linux/Mac
+
+# OU configure manualmente
+cp .env.example .env
+# Edite o arquivo .env conforme necessário
+```
+
+3. Inicie os containers com Docker Compose:
 ```bash
 docker-compose up --build
 ```
@@ -46,6 +106,30 @@ docker-compose up --build
 O aplicativo estará disponível em:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
+
+### Para Produção
+
+1. Configure as variáveis de ambiente:
+```bash
+# Use o template de produção
+cp .env.production .env
+
+# Edite com suas configurações
+nano .env  # ou notepad .env no Windows
+```
+
+2. **IMPORTANTE**: Altere as seguintes configurações obrigatórias:
+   - `HOST_DOMAIN`: Seu domínio de produção
+   - `HOST_IP`: IP do seu servidor
+   - `SECRET_KEY`: Gere uma nova chave secreta
+   - `DB_PASSWORD`: Senha segura para o banco
+   - `REACT_APP_API_URL`: URL da sua API em produção
+   - `DEBUG`: Defina como `False`
+
+3. Execute em produção:
+```bash
+docker-compose -f docker-compose.prod.yml up --build -d
+```
 
 ### Instalação Manual (Desenvolvimento)
 
