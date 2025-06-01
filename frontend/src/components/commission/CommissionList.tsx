@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Box,
   Paper,
@@ -42,8 +42,7 @@ const CommissionList: React.FC = () => {
   const [totalCommissionDue, setTotalCommissionDue] = useState<number>(0);
   const [showNewCommissionForm, setShowNewCommissionForm] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<ClinicCommissionPayment | null>(null);
-
-  const fetchCommissionPayments = async () => {
+  const fetchCommissionPayments = useCallback(async () => {
     try {
       setLoading(true);
       const response = await CommissionService.getCommissionPayments(
@@ -57,9 +56,9 @@ const CommissionList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.physiotherapist?.id, selectedStatus]);
 
-  const fetchDueCommissions = async () => {
+  const fetchDueCommissions = useCallback(async () => {
     if (!user?.physiotherapist?.id) {
       console.error('No physiotherapist ID found');
       return;
@@ -80,22 +79,20 @@ const CommissionList: React.FC = () => {
       } else {
         console.error('Total commission due is undefined in response:', totalResponse);
         setTotalCommissionDue(0);
-      }
-    } catch (error) {
+      }    } catch (error) {
       console.error('Error fetching due commissions:', error);
       setError('Erro ao carregar comissões devidas');
     }
-  };
-
+  }, [user?.physiotherapist?.id]);
   useEffect(() => {
     fetchCommissionPayments();
-  }, [selectedStatus]);
+  }, [selectedStatus, fetchCommissionPayments]);
 
   useEffect(() => {
     if (!user?.is_staff) {
       fetchDueCommissions();
     }
-  }, [user]);
+  }, [user, fetchDueCommissions]);
 
   const handleApprove = async (id: number) => {
     try {

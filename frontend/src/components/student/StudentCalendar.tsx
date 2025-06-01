@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -81,12 +81,11 @@ const StudentCalendar: React.FC = () => {
   const [selectedPhysiotherapist, setSelectedPhysiotherapist] = useState<number | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const getPhysiotherapistColor = (physiotherapistId: number) => {
+  const getPhysiotherapistColor = useCallback((physiotherapistId: number) => {
     // Se não houver fisioterapeuta selecionado, usar o índice do fisioterapeuta para a cor
     const index = physiotherapists.findIndex(p => p.id === physiotherapistId);
     return PHYSIO_COLORS[index % PHYSIO_COLORS.length];
-  };
+  }, [physiotherapists]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -178,10 +177,8 @@ const StudentCalendar: React.FC = () => {
       } catch (error) {
         console.error('Erro ao buscar eventos:', error);
       }
-    };
-
-    fetchEvents();
-  }, [user, selectedPhysiotherapist, physiotherapists]);
+    };    fetchEvents();
+  }, [user, selectedPhysiotherapist, physiotherapists, getPhysiotherapistColor]);
 
   useEffect(() => {
     const fetchPhysiotherapists = async () => {

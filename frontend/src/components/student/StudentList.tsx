@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -25,14 +25,13 @@ import {
   MenuItem
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, AttachMoney as AttachMoneyIcon, Visibility as VisibilityIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../../utils/axios';
 import { BaseLayout } from '../shared/BaseLayout';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AxiosError } from 'axios';
 import PaymentForm from '../payment/PaymentForm';
-import { PaymentService } from '../../services/PaymentService';
 
 
 interface Modality {
@@ -88,7 +87,6 @@ const hours = Array.from({ length: 16 }, (_, i) => i + 6).map(hour => ({
 
 const StudentList: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showOnlyActive, setShowOnlyActive] = useState(true);
@@ -99,10 +97,7 @@ const StudentList: React.FC = () => {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
-  const isMobile = window.innerWidth <= 600;
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const fetchStudents = async () => {
-    setLoading(true);
+  const isMobile = window.innerWidth <= 600;  const fetchStudents = useCallback(async () => {
     try {
       let url = '/api/students/';
       const params: any = {};
@@ -123,15 +118,12 @@ const StudentList: React.FC = () => {
       }
       
       const response = await api.get(url, { params });
-      setStudents(response.data);
-    } catch (error) {
+      setStudents(response.data);    } catch (error) {
       setError('Erro ao carregar alunos');
       const axiosError = error as AxiosError;
       console.error('Error fetching students:', axiosError);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [showOnlyActive, weekdayFilter, hourFilter]);
 
   const handleDelete = async (id: number) => {
     if (!window.confirm('Tem certeza que deseja excluir este aluno?')) {
@@ -169,10 +161,9 @@ const StudentList: React.FC = () => {
   const handlePaymentSuccess = () => {
     setSuccessMessage('Pagamento registrado com sucesso');
     fetchStudents();
-  };
-  useEffect(() => {
+  };  useEffect(() => {
     fetchStudents();
-  }, [showOnlyActive, weekdayFilter, hourFilter]);
+  }, [fetchStudents]);
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'dd/MM/yyyy', { locale: ptBR });
@@ -226,18 +217,10 @@ const StudentList: React.FC = () => {
             size="small"
           />
         </Box>
-      );
-    }
+      );    }
   };
 
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);  const filteredStudents = students.filter(student => {
+  const filteredStudents = students.filter(student => {
     // Filtro por nome
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase());
     

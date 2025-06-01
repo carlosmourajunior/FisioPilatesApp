@@ -1,4 +1,4 @@
-import { type FC, useState, useEffect } from 'react';
+import { type FC, useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Paper,
@@ -16,14 +16,11 @@ import {
   TableRow,
   FormControl,
   InputLabel,
-  Select,
-  MenuItem,
+  Select,  MenuItem,
   Divider,
   SelectChangeEvent,
   Checkbox,
   Button,
-  IconButton,
-  Tooltip,
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { PhysiotherapistService } from '../../services/PhysiotherapistService';
@@ -79,10 +76,10 @@ export interface PaymentStatusSummary {
 }
 
 interface Schedule {
-  weekday: number;
-  hour: number;
+  weekday: number;  hour: number;
 }
 
+/*
 interface Student {
   id: number;
   name: string;
@@ -97,6 +94,7 @@ interface Student {
   status: 'paid' | 'pending' | 'overdue';
   schedules: Schedule[];
 }
+*/
 
 export interface Physiotherapist {
   id: number;
@@ -140,8 +138,7 @@ const PaymentDashboard: FC = () => {
       console.error('Error fetching physiotherapists:', error);
     }
   };
-
-  const fetchSummary = async (date: Date) => {
+  const fetchSummary = useCallback(async (date: Date) => {
     try {
       setLoading(true);      const response = await PaymentService.getPaymentSummary(
         format(date, 'yyyy-MM'),
@@ -153,17 +150,16 @@ const PaymentDashboard: FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedPhysiotherapist]);
 
   useEffect(() => {
     if (user?.is_staff) {
       fetchPhysiotherapists();
     }
   }, [user]);
-
   useEffect(() => {
     fetchSummary(selectedDate);
-  }, [selectedDate, selectedPhysiotherapist]);
+  }, [selectedDate, fetchSummary]);
 
   if (loading) {
     return (
