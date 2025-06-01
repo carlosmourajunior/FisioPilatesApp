@@ -14,9 +14,11 @@ import { BaseLayout } from '../shared/BaseLayout';
 
 interface PhysiotherapistFormProps {}
 
+/*
 interface FormErrorState {
   error: string | null;
 }
+*/
 
 interface PhysiotherapistFormData {
   username: string;

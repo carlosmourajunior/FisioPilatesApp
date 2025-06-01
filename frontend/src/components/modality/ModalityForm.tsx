@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -32,17 +32,10 @@ const ModalityForm: React.FC = () => {
     name: '',
     description: '',
     price: '',
-    payment_type: 'MONTHLY',
-  });
+    payment_type: 'MONTHLY',  });
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isEditing) {
-      loadModality();
-    }
-  }, [id]);
-
-  const loadModality = async () => {
+  const loadModality = useCallback(async () => {
     try {
       const response = await api.get(`/api/modalities/${id}/`);
       setFormData({
@@ -55,7 +48,13 @@ const ModalityForm: React.FC = () => {
       setError('Erro ao carregar modalidade');
       console.error('Error loading modality:', error);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (isEditing) {
+      loadModality();
+    }
+  }, [id, isEditing, loadModality]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

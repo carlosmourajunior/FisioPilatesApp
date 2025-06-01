@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  Box,
-  Paper,
+  Box,  Paper,
   Typography,
   Grid,
-  Divider,
   Chip,
-  Card,
-  CardContent,
   Table,
   TableBody,
   TableCell,

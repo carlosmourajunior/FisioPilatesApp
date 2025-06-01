@@ -15,7 +15,7 @@ import {
   Snackbar
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../../utils/axios';
 import { BaseLayout } from '../shared/BaseLayout';
 
@@ -31,19 +31,14 @@ interface Physiotherapist {
 }
 
 const PhysiotherapistList: React.FC = () => {
-  const [physiotherapists, setPhysiotherapists] = useState<Physiotherapist[]>([]);  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [physiotherapists, setPhysiotherapists] = useState<Physiotherapist[]>([]);  const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
   const fetchPhysiotherapists = async () => {
     try {
-      setLoading(true);
       const response = await api.get('/api/physiotherapists/');
       setPhysiotherapists(response.data);
     } catch (error) {
       setError('Erro ao carregar fisioterapeutas');
-    } finally {
-      setLoading(false);
     }
   };
 

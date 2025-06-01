@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -22,7 +22,6 @@ import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/ico
 import { Link } from 'react-router-dom';
 import api from '../../utils/axios';
 import { BaseLayout } from '../shared/BaseLayout';
-import { format } from 'date-fns';
 
 interface Modality {
   id: number;
@@ -36,23 +35,17 @@ interface Modality {
 
 const ModalityList: React.FC = () => {
   const [modalities, setModalities] = useState<Modality[]>([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [showOnlyActive, setShowOnlyActive] = useState(true);
-
-  const fetchModalities = async () => {
+  const [showOnlyActive, setShowOnlyActive] = useState(true);  const fetchModalities = useCallback(async () => {
     try {
-      setLoading(true);
       const response = await api.get(`/api/modalities/?active=${showOnlyActive}`);
       setModalities(response.data);
     } catch (error) {
       setError('Erro ao carregar modalidades');
       console.error('Error fetching modalities:', error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [showOnlyActive]);
 
   const handleDelete = async (id: number) => {
     if (!window.confirm('Tem certeza que deseja excluir esta modalidade?')) {
@@ -65,24 +58,12 @@ const ModalityList: React.FC = () => {
       fetchModalities();
     } catch (error) {
       setError('Erro ao excluir modalidade');
-      console.error('Error deleting modality:', error);
-    }
-  };
-
-  const handleToggleActive = async (id: number, currentStatus: boolean) => {
-    try {
-      await api.patch(`/api/modalities/${id}/`, { active: !currentStatus });
-      setSuccessMessage('Status da modalidade atualizado com sucesso');
-      fetchModalities();
-    } catch (error) {
-      setError('Erro ao atualizar status da modalidade');
-      console.error('Error updating modality status:', error);
-    }
+      console.error('Error deleting modality:', error);    }
   };
 
   useEffect(() => {
     fetchModalities();
-  }, [showOnlyActive]);
+  }, [fetchModalities]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {

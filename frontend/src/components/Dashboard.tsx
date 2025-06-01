@@ -32,7 +32,6 @@ export const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<DashboardSummary | null>(null);
-  const isMobile = window.innerWidth <= 600;
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   useEffect(() => {

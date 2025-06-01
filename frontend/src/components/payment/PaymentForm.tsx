@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -6,19 +6,10 @@ import {
   DialogActions,
   Button,
   TextField,
-  Box,
-  CircularProgress,
+  Box,  CircularProgress,
   Alert,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Divider,
-  Typography,
   Snackbar,
 } from '@mui/material';
-import { Delete as DeleteIcon } from '@mui/icons-material';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ptBR } from 'date-fns/locale';
@@ -55,8 +46,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>({ payment_type: 'MONTHLY' });
   const [payments, setPayments] = useState<any[]>([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
-
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     try {
       setLoadingPayments(true);
       const response = await PaymentService.listPayments({ student: studentId });
@@ -66,7 +56,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     } finally {
       setLoadingPayments(false);
     }
-  };
+  }, [studentId]);
 
   const handleDeletePayment = async (paymentId: number) => {
     if (!window.confirm('Tem certeza que deseja excluir este pagamento?')) {
@@ -82,8 +72,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       setError('Erro ao excluir pagamento');
       console.error('Error deleting payment:', error);
     }
-  };
-  const fetchPaymentStatus = async () => {
+  };  const fetchPaymentStatus = useCallback(async () => {
     try {
       const [status, studentResponse] = await Promise.all([
         PaymentService.getPaymentStatus(studentId),
@@ -109,11 +98,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           amount: status.modality_price,
           reference_month: referenceMonth
         }));
-      }
-    } catch (error) {
+      }    } catch (error) {
       console.error('Error fetching payment status:', error);
     }
-  };  useEffect(() => {
+  }, [studentId]);
+
+  useEffect(() => {
     if (open) {
       const initialize = async () => {
         await fetchPaymentStatus();
@@ -130,7 +120,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       
       initialize();
     }
-  }, [studentId, modalityId, open]);
+  }, [studentId, modalityId, open, fetchPaymentStatus, fetchPayments]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
